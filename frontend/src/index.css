@@ -1,111 +1,113 @@
-:root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Hanken+Grotesk:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+@import "tailwindcss";
+@plugin "@tailwindcss/forms";
+@plugin "@tailwindcss/container-queries";
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+@theme {
+  --color-secondary-fixed-dim: #c6c6c7;
+  --color-surface-container-highest: #e2e2e2;
+  --color-on-surface: #1a1c1c;
+  --color-surface-tint: #5e5e5e;
+  --color-tertiary-fixed-dim: #e9c349;
+  --color-outline: #7e7576;
+  --color-inverse-on-surface: #f1f1f1;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-fixed: #ffe088;
+  --color-on-primary-fixed: #1b1b1b;
+  --color-on-secondary-fixed: #1a1c1c;
+  --color-on-primary-fixed-variant: #474747;
+  --color-surface-container-high: #e8e8e8;
+  --color-primary-container: #1b1b1b;
+  --color-surface-container-lowest: #ffffff;
+  --color-on-secondary-container: #616363;
+  --color-outline-variant: #cfc4c5;
+  --color-surface: #f9f9f9;
+  --color-surface-container: #eeeeee;
+  --color-secondary-fixed: #e2e2e2;
+  --color-on-tertiary-fixed-variant: #574500;
+  --color-secondary-container: #dfe0e0;
+  --color-surface-dim: #dadada;
+  --color-primary: #000000;
+  --color-on-tertiary-container: #a08000;
+  --color-error-container: #ffdad6;
+  --color-on-primary-container: #848484;
+  --color-tertiary-container: #241a00;
+  --color-primary-fixed: #e2e2e2;
+  --color-on-tertiary-fixed: #241a00;
+  --color-error: #ba1a1a;
+  --color-on-primary: #ffffff;
+  --color-background: #f9f9f9;
+  --color-secondary: #5d5f5f;
+  --color-inverse-surface: #2f3131;
+  --color-on-error: #ffffff;
+  --color-primary-fixed-dim: #c6c6c6;
+  --color-on-secondary-fixed-variant: #454747;
+  --color-surface-bright: #f9f9f9;
+  --color-on-surface-variant: #4c4546;
+  --color-surface-container-low: #f3f3f3;
+  --color-on-secondary: #ffffff;
+  --color-surface-variant: #e2e2e2;
+  --color-on-error-container: #93000a;
+  --color-on-background: #1a1c1c;
+  --color-inverse-primary: #c6c6c6;
+  --color-tertiary: #000000;
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  --spacing-unit: 4px;
+  --spacing-section-gap: 128px;
+  --spacing-margin-mobile: 20px;
+  --spacing-gutter: 24px;
+  --spacing-margin-desktop: 64px;
 
-  @media (max-width: 1024px) {
-    font-size: 16px;
+  --font-headline-lg-mobile: "Bodoni Moda", serif;
+  --font-display-lg: "Bodoni Moda", serif;
+  --font-body-md: "Hanken Grotesk", sans-serif;
+  --font-headline-lg: "Bodoni Moda", serif;
+  --font-body-lg: "Hanken Grotesk", sans-serif;
+  --font-label-caps: "Hanken Grotesk", sans-serif;
+  --font-headline-md: "Bodoni Moda", serif;
+  --font-label-sm: "Hanken Grotesk", sans-serif;
+
+  --text-headline-lg-mobile: 32px;
+  --text-headline-lg-mobile--line-height: 1.2;
+  --text-headline-lg-mobile--font-weight: 600;
+
+  --text-display-lg: 80px;
+  --text-display-lg--line-height: 1.0;
+  --text-display-lg--letter-spacing: -0.02em;
+  --text-display-lg--font-weight: 700;
+
+  --text-body-md: 16px;
+  --text-body-md--line-height: 1.6;
+  --text-body-md--font-weight: 400;
+
+  --text-headline-lg: 48px;
+  --text-headline-lg--line-height: 1.1;
+  --text-headline-lg--letter-spacing: -0.01em;
+  --text-headline-lg--font-weight: 600;
+
+  --text-body-lg: 18px;
+  --text-body-lg--line-height: 1.6;
+  --text-body-lg--letter-spacing: 0.01em;
+  --text-body-lg--font-weight: 400;
+
+  --text-label-caps: 12px;
+  --text-label-caps--line-height: 1.0;
+  --text-label-caps--letter-spacing: 0.2em;
+  --text-label-caps--font-weight: 600;
+
+  --text-headline-md: 32px;
+  --text-headline-md--line-height: 1.2;
+  --text-headline-md--font-weight: 500;
+
+  --text-label-sm: 11px;
+  --text-label-sm--line-height: 1.0;
+  --text-label-sm--letter-spacing: 0.05em;
+  --text-label-sm--font-weight: 500;
+}
+
+@layer base {
+  body {
+    @apply bg-surface text-primary antialiased min-h-screen flex flex-col;
   }
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
-
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-}
-
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
-}
-
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
-  margin: 0;
-}
-
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
-
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
 }
