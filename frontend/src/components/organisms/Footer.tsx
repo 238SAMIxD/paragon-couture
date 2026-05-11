@@ -1,6 +1,6 @@
 import React from 'react';
-import { Logo } from '../atoms/Logo';
-import { NavLink } from '../atoms/NavLink';
+import { Logo } from "@/components/atoms/Logo";
+import { NavLink } from "@/components/atoms/NavLink";
 
 export const Footer: React.FC = () => (
   <footer className="bg-surface dark:bg-primary flex flex-col md:flex-row justify-between items-center px-margin-desktop py-12 w-full mt-section-gap border-t border-primary dark:border-outline flat no-shadows">

@@ -1,5 +1,5 @@
 import React from 'react';
-import { CollectionCard } from '../molecules/CollectionCard';
+import { CollectionCard } from "@/components/molecules/CollectionCard";
 
 export const CollectionGrid: React.FC = () => (
   <div className="lg:col-span-12 mt-section-gap pt-16 border-t border-primary">

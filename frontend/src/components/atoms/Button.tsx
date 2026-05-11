@@ -1,9 +1,20 @@
-import React from 'react';
+import React from "react";
 
-export const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = ({ children, ...props }) => (
+import { cn } from "@/utils/cn";
+
+export const Button: React.FC<
+  React.ButtonHTMLAttributes<HTMLButtonElement>
+> = ({ children, disabled, className = "", ...props }) => (
   <button
     {...props}
-    className="w-full md:w-auto bg-primary text-white font-label-caps text-label-caps tracking-widest py-4 px-12 border border-primary hover:bg-tertiary-fixed-dim hover:text-primary hover:border-tertiary-fixed-dim transition-all duration-300"
+    disabled={disabled}
+    className={cn(
+      "w-full md:w-auto bg-primary text-white font-label-caps text-label-caps tracking-widest py-4 px-12 border border-primary transition-all duration-300",
+      "hover:bg-tertiary-fixed-dim cursor-pointer hover:text-primary hover:border-tertiary-fixed-dim",
+      disabled &&
+        "opacity-50 cursor-not-allowed hover:bg-primary hover:text-white hover:border-primary",
+      className,
+    )}
   >
     {children}
   </button>

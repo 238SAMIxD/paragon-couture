@@ -1,8 +1,8 @@
 import React from 'react';
 import { Search, ShoppingBag } from 'lucide-react';
-import { Logo } from '../atoms/Logo';
-import { NavLink } from '../atoms/NavLink';
-import { IconButton } from '../atoms/IconButton';
+import { Logo } from "@/components/atoms/Logo";
+import { NavLink } from "@/components/atoms/NavLink";
+import { IconButton } from "@/components/atoms/IconButton";
 
 export const TopNavBar: React.FC = () => (
   <nav className="bg-surface dark:bg-primary flex justify-between items-center px-margin-desktop py-8 w-full z-50 border-b border-primary dark:border-outline flat no-shadows docked full-width top-0 sticky">

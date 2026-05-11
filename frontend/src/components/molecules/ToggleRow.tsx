@@ -1,5 +1,5 @@
 import React from 'react';
-import { Toggle } from '../atoms/Toggle';
+import { Toggle } from "@/components/atoms/Toggle";
 
 interface ToggleRowProps {
   label: string;
