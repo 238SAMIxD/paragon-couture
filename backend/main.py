@@ -1,6 +1,6 @@
 import os
-import urllib.parse
-from fastapi import FastAPI
+import json
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from openai import AsyncOpenAI
@@ -15,9 +15,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 class HealthCheck(BaseModel):
     status: str
     message: str
+
 
 class CoutureRequest(BaseModel):
     trend_description: str
@@ -25,11 +27,6 @@ class CoutureRequest(BaseModel):
     camo_detection: bool
     lead_popping: bool
 
-class CoutureLLMResponse(BaseModel):
-    collection_title: str
-    species_fit: str
-    keywords: list[str]
-    image_prompt: str
 
 class CoutureResponse(BaseModel):
     collection_title: str
@@ -37,50 +34,106 @@ class CoutureResponse(BaseModel):
     keywords: list[str]
     image_url: str
 
-# Retrieve API key or set a placeholder for local development
-api_key = os.getenv("OPENAI_API_KEY", "dummy_key")
-client = AsyncOpenAI(api_key=api_key)
+
+# Configure AsyncOpenAI to use local Ollama instance for development
+# Ollama exposes an OpenAI-compatible API by default on http://localhost:11434
+client = AsyncOpenAI(
+    base_url=os.getenv("OPENAI_BASE_URL", "http://localhost:11434/v1"),
+    api_key=os.getenv("OPENAI_API_KEY", "ollama"),
+)
+
 
 @app.get("/health", response_model=HealthCheck)
 async def health_check():
-    return HealthCheck(
-        status="ok", 
-        message="200 OK!"
-    )
+    return HealthCheck(status="ok", message="200 OK!")
+
 
 @app.post("/api/generate", response_model=CoutureResponse)
 async def generate_couture(request: CoutureRequest):
+    # System prompt: force strict JSON object with exact schema
     system_prompt = (
-        "You are an elite, eccentric luxury fashion designer creating haute couture strictly "
-        "for the monkeys of the Bloons TD 6 universe. Mix high-end editorial fashion terms "
-        "with BTD6 lore (e.g., MOABs, Paragons, Camo bloons). Be creative and extremely serious "
-        "about monkey fashion."
+        "You are an elite luxury fashion designer for the monkeys of the Bloons TD 6 universe. "
+        "You must respond in valid JSON matching exactly this schema: { 'collection_title': '...', 'species_fit': '...', 'keywords': ['...', '...', '...'] }. "
+        "Do not include any other keys, explanation, or surrounding text."
     )
-    
+
     user_prompt = (
-        f"Design a high-end fashion collection based on this trend: '{request.trend_description}'.\n"
-        f"Target demographic: {request.monkey_tower_class}.\n"
-        f"Requirements - Camo Detection: {request.camo_detection}, Lead Popping: {request.lead_popping}."
-        "Provide a highly detailed image prompt suitable for an image generation model to showcase the key outfit."
+        f"Trend: {request.trend_description}. "
+        f"Target tower class: {request.monkey_tower_class}. "
+        f"Camo detection: {request.camo_detection}. Lead popping: {request.lead_popping}."
     )
 
-    completion = await client.beta.chat.completions.parse(
-        model="gpt-4o-2024-08-06",
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ],
-        response_format=CoutureLLMResponse
+    # Ask the local Ollama model to return a JSON object only
+    try:
+        completion = await client.chat.completions.create(
+            model=os.getenv("OLLAMA_MODEL", "llama3.1"),
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            response_format={"type": "json_object"},
+        )
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"LLM request failed: {e}")
+
+    # Extract the first choice
+    try:
+        choice = completion.choices[0]
+    except Exception:
+        raise HTTPException(status_code=502, detail="LLM returned no choices")
+
+    parsed = None
+
+    # Many OpenAI-compatible clients put a parsed attribute when using structured outputs
+    if hasattr(choice.message, "parsed"):
+        parsed = choice.message.parsed
+    else:
+        # Fallback: try to extract textual content and parse as JSON
+        content_str = None
+        msg = choice.message
+        if isinstance(msg, dict):
+            content = msg.get("content")
+            if isinstance(content, list):
+                content_str = "".join(
+                    part.get("text", "") if isinstance(part, dict) else str(part) for part in content
+                )
+            else:
+                content_str = content
+        else:
+            content_attr = getattr(msg, "content", None)
+            if isinstance(content_attr, list):
+                content_str = "".join(getattr(p, "text", str(p)) for p in content_attr)
+            else:
+                content_str = content_attr
+
+        if not content_str or not isinstance(content_str, str):
+            raise HTTPException(status_code=502, detail="LLM returned no parsable content")
+
+        try:
+            parsed = json.loads(content_str)
+        except Exception as e:
+            raise HTTPException(status_code=502, detail=f"LLM returned invalid JSON: {e}\nContent: {content_str}")
+
+    # Validate parsed structure contains required keys
+    if not isinstance(parsed, dict) or not all(k in parsed for k in ("collection_title", "species_fit", "keywords")):
+        raise HTTPException(status_code=502, detail=f"LLM JSON missing required keys: {parsed}")
+
+    # Inject a static placeholder image URL for the MVP
+    placeholder_image = os.getenv(
+        "COUTURE_PLACEHOLDER_IMAGE",
+        "https://images.unsplash.com/photo-1540573133985-87b6da6d54a9?q=80&w=1000&auto=format&fit=crop",
     )
 
-    llm_response = completion.choices[0].message.parsed
-    
-    image_url = "https://image.pollinations.ai/prompt/" + urllib.parse.quote(llm_response.image_prompt)
+    response_obj = {
+        "collection_title": parsed["collection_title"],
+        "species_fit": parsed["species_fit"],
+        "keywords": parsed["keywords"],
+        "image_url": placeholder_image,
+    }
 
-    return CoutureResponse(
-        collection_title=llm_response.collection_title,
-        species_fit=llm_response.species_fit,
-        keywords=llm_response.keywords,
-        image_url=image_url
-    )
+    # Validate against Pydantic model before returning
+    try:
+        return CoutureResponse.parse_obj(response_obj)
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Response validation failed: {e}")
 
