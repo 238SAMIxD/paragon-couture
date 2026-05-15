@@ -1,15 +1,20 @@
 import os
 import json
+from dotenv import load_dotenv
+import urllib.parse
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from openai import AsyncOpenAI
 
+# Load environment variables from .env file
+load_dotenv()
+
 app = FastAPI(title="Paragon Couture API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],
+    allow_origins=["http://localhost:5174", "http://localhost:5173", "http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -118,11 +123,11 @@ async def generate_couture(request: CoutureRequest):
     if not isinstance(parsed, dict) or not all(k in parsed for k in ("collection_title", "species_fit", "keywords")):
         raise HTTPException(status_code=502, detail=f"LLM JSON missing required keys: {parsed}")
 
-    # Inject a static placeholder image URL for the MVP
-    placeholder_image = os.getenv(
-        "COUTURE_PLACEHOLDER_IMAGE",
-        "https://images.unsplash.com/photo-1540573133985-87b6da6d54a9?q=80&w=1000&auto=format&fit=crop",
-    )
+    # Use the Dart Monkey image from the frontend public directory
+    frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5174")
+    # URL encode the filename with space
+    encoded_filename = urllib.parse.quote("Dart Monkey.png")
+    placeholder_image = f"{frontend_url}/{encoded_filename}"
 
     response_obj = {
         "collection_title": parsed["collection_title"],

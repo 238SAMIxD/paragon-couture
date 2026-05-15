@@ -6,7 +6,7 @@ import { ConfigurationForm } from "@/components/organisms/ConfigurationForm";
 import { EditorialHero } from "@/components/organisms/EditorialHero";
 import { Footer } from "@/components/organisms/Footer";
 import { TopNavBar } from "@/components/organisms/TopNavBar";
-import { mockParagonGeneration } from "@/services/mockService";
+import { generateParagonCouture } from "@/services/coutureService";
 
 import type { ParagonConfigurationState, CoutureResponse } from "@/types";
 function App() {
@@ -24,7 +24,7 @@ function App() {
     setIsLoading(true);
     setResult(null);
     try {
-      const res = await mockParagonGeneration(config);
+      const res = await generateParagonCouture(config);
       setResult(res);
     } catch (error) {
       console.error(error);
@@ -37,7 +37,7 @@ function App() {
     <div className="bg-surface text-primary antialiased min-h-screen flex flex-col font-body-md">
       <TopNavBar />
 
-      <main className="flex-grow w-full max-w-[1600px] mx-auto px-margin-mobile md:px-margin-desktop py-16 grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+      <main className="grow w-full max-w-400 mx-auto px-margin-mobile md:px-margin-desktop py-16 grid grid-cols-1 lg:grid-cols-12 gap-gutter">
         <EditorialHero />
 
         <ConfigurationForm
