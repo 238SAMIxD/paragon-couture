@@ -1,5 +1,14 @@
 set shell := ["bash", "-c"]
 
+@db-up:
+    docker-compose up -d
+
+@db-down:
+    docker-compose down
+
+@db-restart:
+    docker-compose restart
+
 @dev-frontend:
     cd frontend && pnpm run dev
 
@@ -16,4 +25,4 @@ set shell := ["bash", "-c"]
     just setup-frontend && just setup-backend
 
 @dev:
-    just dev-frontend & just dev-backend & wait
+    just db-up & just dev-frontend & just dev-backend & wait

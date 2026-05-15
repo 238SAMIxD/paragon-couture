@@ -1,0 +1,20 @@
+from sqlalchemy import Column, Integer, String, DateTime, func, JSON
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.ext.declarative import declarative_base
+import uuid
+
+# Import the base from database.py
+from src.core.database import Base
+
+class CoutureCollection(Base):
+    __tablename__ = "couture_collections"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    trend_description = Column(String, nullable=False)
+    monkey_tower_class = Column(String, nullable=False)
+    collection_title = Column(String, nullable=False)
+    species_fit = Column(String, nullable=False)
+    # Using JSON for keywords (list of strings)
+    keywords = Column(JSON, nullable=False)
+    image_url = Column(String, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())

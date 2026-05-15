@@ -1,11 +1,16 @@
 import os
 import json
+import uuid
+from datetime import datetime
 from dotenv import load_dotenv
 import urllib.parse
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from openai import AsyncOpenAI
+from sqlalchemy.ext.asyncio import AsyncSession
+from src.core.database import Base, engine, get_db
+from src.models.database_models import CoutureCollection
 
 # Load environment variables from .env file
 load_dotenv()
@@ -19,6 +24,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.on_event("startup")
+async def on_startup():
+    # Create database tables
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 
 
 class HealthCheck(BaseModel):
@@ -40,6 +52,20 @@ class CoutureResponse(BaseModel):
     image_url: str
 
 
+class CoutureCollectionResponse(BaseModel):
+    id: uuid.UUID
+    trend_description: str
+    monkey_tower_class: str
+    collection_title: str
+    species_fit: str
+    keywords: list[str]
+    image_url: str
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
+
+
 # Configure AsyncOpenAI to use local Ollama instance for development
 # Ollama exposes an OpenAI-compatible API by default on http://localhost:11434
 client = AsyncOpenAI(
@@ -54,7 +80,7 @@ async def health_check():
 
 
 @app.post("/api/generate", response_model=CoutureResponse)
-async def generate_couture(request: CoutureRequest):
+async def generate_couture(request: CoutureRequest, session: AsyncSession = Depends(get_db)):
     # System prompt: force strict JSON object with exact schema
     system_prompt = (
         "You are an elite luxury fashion designer for the monkeys of the Bloons TD 6 universe. "
@@ -129,6 +155,19 @@ async def generate_couture(request: CoutureRequest):
     encoded_filename = urllib.parse.quote("Dart Monkey.png")
     placeholder_image = f"{frontend_url}/{encoded_filename}"
 
+    # Create database record
+    db_collection = CoutureCollection(
+        trend_description=request.trend_description,
+        monkey_tower_class=request.monkey_tower_class,
+        collection_title=parsed["collection_title"],
+        species_fit=parsed["species_fit"],
+        keywords=parsed["keywords"],
+        image_url=placeholder_image,
+    )
+    session.add(db_collection)
+    await session.commit()
+    await session.refresh(db_collection)
+
     response_obj = {
         "collection_title": parsed["collection_title"],
         "species_fit": parsed["species_fit"],
@@ -141,4 +180,15 @@ async def generate_couture(request: CoutureRequest):
         return CoutureResponse.parse_obj(response_obj)
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Response validation failed: {e}")
+
+
+@app.get("/api/collections", response_model=list[CoutureCollectionResponse])
+async def get_collections(session: AsyncSession = Depends(get_db)):
+    # Fetch the 10 most recently generated collections
+    from sqlalchemy import desc, select
+    result = await session.execute(
+        select(CoutureCollection).order_by(desc(CoutureCollection.created_at)).limit(10)
+    )
+    collections = result.scalars().all()
+    return collections
 
