@@ -1,5 +1,16 @@
 set shell := ["bash", "-c"]
 
+# Setup scripts
+@setup-frontend:
+    cd frontend && pnpm i
+
+@setup-backend:
+    cd backend && uv sync
+
+@setup:
+    just setup-frontend && just setup-backend
+
+# Dev scripts
 @db-up:
     docker-compose up -d
 
@@ -15,14 +26,9 @@ set shell := ["bash", "-c"]
 @dev-backend:
     cd backend && uv run uvicorn main:app --reload --port 8000
 
-@setup-frontend:
-    cd frontend && pnpm i
-
-@setup-backend:
-    cd backend && uv sync
-
-@setup:
-    just setup-frontend && just setup-backend
-
 @dev:
     just db-up & just dev-frontend & just dev-backend & wait
+
+# Test script
+@test:
+    cd backend && uv run python -m pytest tests/ -v

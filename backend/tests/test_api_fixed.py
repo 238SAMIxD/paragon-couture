@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import patch
+from unittest.mock import patch, AsyncMock
 import json
 
 # Test 1: Healthcheck
@@ -22,7 +22,7 @@ def test_generate_couture(client):
     }
     
     # Mock the AsyncOpenAI client call
-    with patch('main.client.chat.completions.create') as mock_create:
+    with patch('main.client.chat.completions.create', new_callable=AsyncMock) as mock_create:
         # Configure the mock to return a response with parsed attribute
         mock_choice = type('MockChoice', (), {})()
         mock_choice.message = type('MockMessage', (), {})()
