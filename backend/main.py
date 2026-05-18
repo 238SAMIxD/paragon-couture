@@ -12,9 +12,16 @@ from openai import AsyncOpenAI
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.core.database import Base, engine, get_db
 from src.models.database_models import CoutureCollection
+from src.core.telemetry import setup_telemetry
+from src.api.middleware import LoggingMiddleware
+import structlog
 
 # Load environment variables from .env file
 load_dotenv()
+
+# Configure structlog
+from src.core.logger import configure_structlog
+configure_structlog()
 
 
 @asynccontextmanager
@@ -26,6 +33,12 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Paragon Couture API", version="1.0.0", lifespan=lifespan)
+
+# Set up telemetry
+setup_telemetry(app)
+
+# Add logging middleware
+app.add_middleware(LoggingMiddleware)
 
 app.add_middleware(
     CORSMiddleware,
