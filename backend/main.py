@@ -2,6 +2,7 @@ import os
 import json
 import uuid
 from datetime import datetime
+from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 import urllib.parse
 from fastapi import FastAPI, HTTPException, Depends
@@ -15,7 +16,16 @@ from src.models.database_models import CoutureCollection
 # Load environment variables from .env file
 load_dotenv()
 
-app = FastAPI(title="Paragon Couture API", version="1.0.0")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Create database tables on startup
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+
+
+app = FastAPI(title="Paragon Couture API", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -24,13 +34,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.on_event("startup")
-async def on_startup():
-    # Create database tables
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
 
 
 class HealthCheck(BaseModel):
@@ -113,37 +116,29 @@ async def generate_couture(request: CoutureRequest, session: AsyncSession = Depe
     except Exception:
         raise HTTPException(status_code=502, detail="LLM returned no choices")
 
-    parsed = None
+    # Get the message content - handle both object and dict formats
+    message = choice.message
+    content_str = ""
 
-    # Many OpenAI-compatible clients put a parsed attribute when using structured outputs
-    if hasattr(choice.message, "parsed"):
-        parsed = choice.message.parsed
-    else:
-        # Fallback: try to extract textual content and parse as JSON
-        content_str = None
-        msg = choice.message
-        if isinstance(msg, dict):
-            content = msg.get("content")
-            if isinstance(content, list):
-                content_str = "".join(
-                    part.get("text", "") if isinstance(part, dict) else str(part) for part in content
-                )
-            else:
-                content_str = content
-        else:
-            content_attr = getattr(msg, "content", None)
-            if isinstance(content_attr, list):
-                content_str = "".join(getattr(p, "text", str(p)) for p in content_attr)
-            else:
-                content_str = content_attr
+    # Handle Pydantic v2 format where message is a model with content attribute
+    if hasattr(message, 'content'):
+        content_str = str(message.content) if message.content is not None else ""
+    # Handle dict format
+    elif isinstance(message, dict):
+        content_str = str(message.get('content', '')) if message.get('content') is not None else ""
+    # Handle case where content might be a list of parts
+    if isinstance(content_str, list):
+        content_str = "".join(
+            str(part.get("text", "")) if isinstance(part, dict) else str(part) for part in content_str
+        )
 
-        if not content_str or not isinstance(content_str, str):
-            raise HTTPException(status_code=502, detail="LLM returned no parsable content")
+    if not content_str:
+        raise HTTPException(status_code=502, detail="LLM returned no parsable content")
 
-        try:
-            parsed = json.loads(content_str)
-        except Exception as e:
-            raise HTTPException(status_code=502, detail=f"LLM returned invalid JSON: {e}\nContent: {content_str}")
+    try:
+        parsed = json.loads(content_str)
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"LLM returned invalid JSON: {e}\nContent: {content_str}")
 
     # Validate parsed structure contains required keys
     if not isinstance(parsed, dict) or not all(k in parsed for k in ("collection_title", "species_fit", "keywords")):
@@ -177,7 +172,7 @@ async def generate_couture(request: CoutureRequest, session: AsyncSession = Depe
 
     # Validate against Pydantic model before returning
     try:
-        return CoutureResponse.parse_obj(response_obj)
+        return CoutureResponse.model_validate(response_obj)
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Response validation failed: {e}")
 

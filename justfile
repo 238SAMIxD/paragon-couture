@@ -29,6 +29,15 @@ set shell := ["bash", "-c"]
 @dev:
     just db-up & just dev-frontend & just dev-backend & wait
 
-# Test script
-@test:
+# Test scripts
+@test-backend:
     cd backend && uv run python -m pytest tests/ -v
+
+@test-frontend:
+    cd frontend && pnpm exec playwright test
+
+@test-frontend-ui:
+    cd frontend && pnpm exec playwright test --ui
+
+@test:
+    just test-backend && just test-frontend
