@@ -14,35 +14,35 @@ The included React application serves as a Minimum Viable Product (MVP) client t
 
 The microservice is built for high performance and tracing capabilities:
 
-- **Framework:** Python with FastAPI for asynchronous REST endpoints[cite: 3].
-- **Observability:** Native OpenTelemetry integration (`telemetry.py`) for detailed request tracing and LLM generation monitoring[cite: 3].
+- **Framework:** Python with FastAPI for asynchronous REST endpoints.
+- **Observability:** Native OpenTelemetry integration (`telemetry.py`) for detailed request tracing and LLM generation monitoring.
 - **Data Validation:** Pydantic models for strict payload validation.
-- **Database:** Core database integration prepared via `database.py` and `database_models.py`[cite: 3].
+- **Database:** Core database integration prepared via `database.py` and `database_models.py`.
 
 ### Frontend
 
 A strictly typed, component-based client application:
 
-- **Core:** React with TypeScript, powered by Vite[cite: 3].
-- **Architecture:** Atomic design pattern implementations (Atoms, Molecules, Organisms)[cite: 3].
-- **Testing:** E2E testing configured with Playwright (`paragon-flow.spec.ts`)[cite: 3].
+- **Core:** React with TypeScript, powered by Vite.
+- **Architecture:** Atomic design pattern implementations (Atoms, Molecules, Organisms).
+- **Testing:** E2E testing configured with Playwright (`paragon-flow.spec.ts`).
 
 ### Infrastructure & Tooling
 
-- **Containerization:** `docker-compose.yml` for unified local development environments[cite: 3].
-- **Task Runner:** `justfile` included for streamlined command execution and environment setup[cite: 3].
-- **Dependency Management:** `uv.lock` and `pyproject.toml` for the backend, `pnpm` for the frontend[cite: 3].
+- **Containerization:** `docker-compose.yml` for unified local development environments.
+- **Task Runner:** `justfile` included for streamlined command execution and environment setup.
+- **Dependency Management:** `uv.lock` and `pyproject.toml` for the backend, `pnpm` for the frontend.
 
 ## 🗺️ Roadmap / Work in Progress
 
 - [x] **Phase 1: Foundation**
-  - Setup FastAPI backend with custom middleware[cite: 3].
-  - Initialize React/TypeScript frontend with Vite[cite: 3].
-  - Configure local Docker ecosystem[cite: 3].
+  - Setup FastAPI backend with custom middleware.
+  - Initialize React/TypeScript frontend with Vite.
+  - Configure local Docker ecosystem.
 - [x] **Phase 2: Observability & Core Logic**
-  - Implement OpenTelemetry tracing for API routes[cite: 3].
-  - Setup database models and core logger[cite: 3].
-  - Implement E2E testing foundation with Playwright[cite: 3].
+  - Implement OpenTelemetry tracing for API routes.
+  - Setup database models and core logger.
+  - Implement E2E testing foundation with Playwright.
 - [ ] **Phase 3: AI Integration (Current)**
   - Integrate Gemini LLM engine.
   - Implement Model Context Protocol (MCP) for tool execution.
@@ -54,7 +54,7 @@ A strictly typed, component-based client application:
 
 - Docker & Docker Compose
 - Node.js & pnpm
-- Python 3.12+[cite: 3]
+- Python 3.12+
 - `just` command runner
 
 ### Running Locally
