@@ -1,25 +1,27 @@
 from opentelemetry import trace
+from opentelemetry.sdk.resources import Resource, SERVICE_NAME
 from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from fastapi import FastAPI
 
 def setup_telemetry(app: FastAPI) -> None:
     """
     Set up OpenTelemetry for the FastAPI application.
-    Configures a TracerProvider with ConsoleSpanExporter (for development).
+    Configures a TracerProvider with OTLPSpanExporter (for Jaeger).
     Instruments the FastAPI app.
     """
-    # Set the tracer provider
-    trace.set_tracer_provider(TracerProvider())
+    resource = Resource.create(attributes={
+        SERVICE_NAME: "paragon-couture"
+    })
+
+    trace.set_tracer_provider(TracerProvider(resource=resource))
     
-    # Get the tracer provider
     tracer_provider = trace.get_tracer_provider()
     
-    # Add a console span exporter for development
-    console_exporter = ConsoleSpanExporter()
-    span_processor = BatchSpanProcessor(console_exporter)
+    otlp_exporter = OTLPSpanExporter(endpoint="http://localhost:4317", insecure=True)
+    span_processor = BatchSpanProcessor(otlp_exporter)
     tracer_provider.add_span_processor(span_processor)
     
-    # Instrument FastAPI
     FastAPIInstrumentor.instrument_app(app)

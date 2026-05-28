@@ -1,6 +1,9 @@
 import structlog
 import uuid
+import logging
 from typing import Any
+
+DEFAULT_LOG_LEVEL = logging.INFO
 
 def configure_structlog() -> None:
     """
@@ -13,7 +16,7 @@ def configure_structlog() -> None:
             structlog.processors.add_log_level,
             structlog.processors.JSONRenderer(),
         ],
-        wrapper_class=structlog.make_filtering_bound_logger(20),  # INFO level
+        wrapper_class=structlog.make_filtering_bound_logger(DEFAULT_LOG_LEVEL),
         context_class=dict,
         logger_factory=structlog.PrintLoggerFactory(),
         cache_logger_on_first_use=False,

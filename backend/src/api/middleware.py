@@ -10,12 +10,9 @@ logger = get_logger(__name__)
 
 class LoggingMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
-        # Generate a unique request ID
         request_id = str(uuid.uuid4())
-        # Bind the request ID to structlog contextvars
         bind_request_id(request_id)
         
-        # Log the incoming request
         logger.info(
             "incoming_request",
             method=request.method,
@@ -25,13 +22,10 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         
         start_time = time.time()
         
-        # Process the request
         response: Response = await call_next(request)
         
-        # Calculate processing time
-        process_time = (time.time() - start_time) * 1000  # in milliseconds
+        process_time = (time.time() - start_time) * 1000
         
-        # Log the outgoing response
         logger.info(
             "outgoing_response",
             method=request.method,

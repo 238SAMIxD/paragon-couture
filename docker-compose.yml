@@ -13,5 +13,15 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: paragon_jaeger
+    environment:
+      - OTEL_TRACES_SAMPLER=always_off
+    ports:
+      - "16686:16686" # Web UI
+      - "4317:4317" # OTLP gRPC receiver
+      - "4318:4318" # OTLP HTTP receiver
+
 volumes:
   postgres_data:
