@@ -86,6 +86,12 @@ Alternatively, you can run individual services:
 - **Frontend development server:** `just dev-frontend`
 - **Backend development server:** `just dev-backend`
 
+### 🔬 Observability (OpenTelemetry & Jaeger)
+
+The backend is fully instrumented with **OpenTelemetry**. When running the infrastructure via Docker Compose (`just dev` or `just db-up`), a Jaeger container is automatically started to collect and visualize traces.
+
+- **Jaeger UI:** Access the tracing dashboard at [http://localhost:16686](http://localhost:16686) to inspect API requests, LLM generation flows, and database queries.
+
 ## 🧪 Testing
 
 The project includes foundational tests for both stacks that can be executed easily using `just`:
