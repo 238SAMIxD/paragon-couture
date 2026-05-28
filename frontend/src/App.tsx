@@ -19,6 +19,7 @@ function App() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<CoutureResponse | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const handleSubmit = async () => {
     setIsLoading(true);
@@ -28,6 +29,7 @@ function App() {
       setResult(res);
     } catch (error) {
       console.error(error);
+      setErrorMsg(error instanceof Error ? error.message : "An unexpected error occurred");
     } finally {
       setIsLoading(false);
     }
@@ -49,8 +51,13 @@ function App() {
 
         {/* Results Card with fade in transition */}
         <div
-          className={`lg:col-span-12 mt-16 transition-opacity duration-1000 ${result ? "opacity-100" : "opacity-0 hidden"}`}
+          className={`lg:col-span-12 mt-16 transition-opacity duration-1000 ${result || errorMsg ? "opacity-100" : "opacity-0 invisible h-0"}`}
         >
+          {errorMsg && (
+            <div className="max-w-md mx-auto p-4 border border-red-500 bg-red-50 text-red-700 text-center">
+              {errorMsg}
+            </div>
+          )}
           {result && (
             <div className="max-w-md mx-auto">
               <h2 className="text-2xl font-headline-md mb-8 text-center border-b border-primary pb-4">

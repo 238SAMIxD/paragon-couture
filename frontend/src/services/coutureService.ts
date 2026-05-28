@@ -33,12 +33,16 @@ export async function generateParagonCouture(
     );
   }
 
-  const data = (await response.json()) as ApiCoutureResponse;
+  const data = await response.json();
+  
+  if (!data || typeof data !== 'object') {
+    throw new Error('Invalid response format from server');
+  }
 
   return {
-    collectionTitle: data.collection_title,
-    speciesFit: data.species_fit,
-    keywords: data.keywords,
-    imageUrl: data.image_url,
+    collectionTitle: data.collection_title || 'Unknown Collection',
+    speciesFit: data.species_fit || 'Unknown Fit',
+    keywords: Array.isArray(data.keywords) ? data.keywords : [],
+    imageUrl: data.image_url || '',
   };
 }

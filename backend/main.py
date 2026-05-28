@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 import urllib.parse
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from openai import AsyncOpenAI
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.core.database import Base, engine, get_db
@@ -73,8 +73,7 @@ class CoutureCollectionResponse(BaseModel):
     image_url: str
     created_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 client = AsyncOpenAI(
@@ -112,12 +111,14 @@ async def generate_couture(request: CoutureRequest, session: AsyncSession = Depe
             response_format={"type": "json_object"},
         )
     except Exception as e:
-        raise HTTPException(status_code=502, detail=f"LLM request failed: {e}")
+        structlog.get_logger().error("llm_request_failed", error=str(e))
+        raise HTTPException(status_code=502, detail="Upstream service unavailable")
 
     try:
         choice = completion.choices[0]
-    except Exception:
-        raise HTTPException(status_code=502, detail="LLM returned no choices")
+    except Exception as e:
+        structlog.get_logger().error("llm_no_choices", error=str(e))
+        raise HTTPException(status_code=502, detail="Upstream service unavailable")
 
     message = choice.message
     content_str = ""
@@ -133,15 +134,18 @@ async def generate_couture(request: CoutureRequest, session: AsyncSession = Depe
         )
 
     if not content_str:
-        raise HTTPException(status_code=502, detail="LLM returned no parsable content")
+        structlog.get_logger().error("llm_no_content")
+        raise HTTPException(status_code=502, detail="Upstream service unavailable")
 
     try:
         parsed = json.loads(content_str)
     except Exception as e:
-        raise HTTPException(status_code=502, detail=f"LLM returned invalid JSON: {e}\nContent: {content_str}")
+        structlog.get_logger().error("llm_invalid_json", error=str(e), content=content_str)
+        raise HTTPException(status_code=502, detail="Upstream service unavailable")
 
     if not isinstance(parsed, dict) or not all(k in parsed for k in ("collection_title", "species_fit", "keywords")):
-        raise HTTPException(status_code=502, detail=f"LLM JSON missing required keys: {parsed}")
+        structlog.get_logger().error("llm_missing_keys", parsed=parsed)
+        raise HTTPException(status_code=502, detail="Upstream service unavailable")
 
     frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5174")
     encoded_filename = urllib.parse.quote("Dart Monkey.png")
@@ -169,7 +173,8 @@ async def generate_couture(request: CoutureRequest, session: AsyncSession = Depe
     try:
         return CoutureResponse.model_validate(response_obj)
     except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Response validation failed: {e}")
+        structlog.get_logger().error("response_validation_failed", error=str(e))
+        raise HTTPException(status_code=502, detail="Upstream service unavailable")
 
 
 @app.get("/api/collections", response_model=list[CoutureCollectionResponse])

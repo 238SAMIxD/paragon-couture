@@ -1,27 +1,30 @@
-version: "3.8"
-
 services:
   postgres:
     image: postgres:15-alpine
     container_name: paragon_postgres
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     environment:
-      POSTGRES_USER: paragon
-      POSTGRES_PASSWORD: couture_secret
-      POSTGRES_DB: paragon_db
+      POSTGRES_USER: ${POSTGRES_USER:-paragon}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-couture_secret_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-paragon_db}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U paragon"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   jaeger:
-    image: jaegertracing/all-in-one:latest
+    image: jaegertracing/all-in-one:1.62
     container_name: paragon_jaeger
     environment:
-      - OTEL_TRACES_SAMPLER=always_off
+      - OTEL_TRACES_SAMPLER=always_on
     ports:
-      - "16686:16686" # Web UI
-      - "4317:4317" # OTLP gRPC receiver
-      - "4318:4318" # OTLP HTTP receiver
+      - "127.0.0.1:16686:16686" # Web UI
+      - "127.0.0.1:4317:4317" # OTLP gRPC receiver
+      - "127.0.0.1:4318:4318" # OTLP HTTP receiver
 
 volumes:
   postgres_data:
