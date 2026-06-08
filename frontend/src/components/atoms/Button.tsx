@@ -9,10 +9,10 @@ export const Button: React.FC<
     {...props}
     disabled={disabled}
     className={cn(
-      "w-full md:w-auto bg-primary text-white font-label-caps text-label-caps tracking-widest py-4 px-12 border border-primary transition-all duration-300",
+      "w-full md:w-auto bg-primary text-on-primary font-label-caps text-label-caps tracking-widest py-4 px-12 border border-primary transition-all duration-300",
       "hover:bg-tertiary-fixed-dim cursor-pointer hover:text-primary hover:border-tertiary-fixed-dim",
       disabled &&
-        "opacity-50 cursor-not-allowed hover:bg-primary hover:text-white hover:border-primary",
+        "opacity-50 cursor-not-allowed hover:bg-primary hover:text-on-primary hover:border-primary",
       className,
     )}
   >
