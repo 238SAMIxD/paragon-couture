@@ -33,7 +33,7 @@ export async function generateParagonCouture(
     );
   }
 
-  const data = await response.json();
+  const data: ApiCoutureResponse = await response.json();
   
   if (!data || typeof data !== 'object') {
     throw new Error('Invalid response format from server');
