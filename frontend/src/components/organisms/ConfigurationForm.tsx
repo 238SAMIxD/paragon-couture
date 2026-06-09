@@ -92,17 +92,17 @@ export const ConfigurationForm: React.FC<ConfigurationFormProps> = ({
       <form className="space-y-12 max-w-2xl" onSubmit={handleSubmit}>
         <TrendDescriptionField
           value={config.trendDescription}
-          onChange={(value) => setConfig({ ...config, trendDescription: value })}
+          onChange={(value) => setConfig((prev) => ({ ...prev, trendDescription: value }))}
         />
         <TowerClassField
           value={config.monkeyTowerClass}
-          onChange={(value) => setConfig({ ...config, monkeyTowerClass: value })}
+          onChange={(value) => setConfig((prev) => ({ ...prev, monkeyTowerClass: value }))}
         />
         <OptionsSection
           camoDetection={config.camoDetection}
           leadPopping={config.leadPopping}
-          onCamoChange={(c) => setConfig({ ...config, camoDetection: c })}
-          onLeadChange={(c) => setConfig({ ...config, leadPopping: c })}
+          onCamoChange={(c) => setConfig((prev) => ({ ...prev, camoDetection: c }))}
+          onLeadChange={(c) => setConfig((prev) => ({ ...prev, leadPopping: c }))}
         />
         <SubmitButton isLoading={isLoading} />
       </form>

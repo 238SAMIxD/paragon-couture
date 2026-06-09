@@ -68,14 +68,16 @@ export async function generateParagonCouture(request: CoutureRequest): Promise<C
     }),
   });
 
-  if (!data) {
+  if (!data || typeof data !== "object") {
     throw new Error("Invalid response format from server");
   }
+
+  const keywords = Array.isArray(data.keywords) ? data.keywords : [];
 
   return {
     collectionTitle: data.collection_title ?? "Unknown Collection",
     speciesFit: data.species_fit ?? "Unknown Fit",
-    keywords: data.keywords ?? [],
+    keywords,
     imageUrl: data.image_url ?? "",
     fallbackUsed: data.fallback_used ?? false,
   };
