@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { CollectionCard } from "@/components/molecules/CollectionCard";
 import { CollectionGrid } from "@/components/organisms/CollectionGrid";
@@ -22,6 +22,13 @@ function App() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   // Increment to trigger CollectionGrid re-fetch after a successful generation
   const [gridRefreshKey, setGridRefreshKey] = useState(0);
+  const resultRegionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (result || errorMsg) {
+      resultRegionRef.current?.focus();
+    }
+  }, [result, errorMsg]);
 
   const handleSubmit = async () => {
     setIsLoading(true);
@@ -55,10 +62,16 @@ function App() {
 
         {/* Results Card with fade in transition */}
         <div
+          aria-live="polite"
+          ref={resultRegionRef}
+          tabIndex={-1}
           className={`lg:col-span-12 mt-16 transition-opacity duration-1000 ${result || errorMsg ? "opacity-100" : "opacity-0 invisible h-0"}`}
         >
           {errorMsg && (
-            <div className="max-w-md mx-auto p-4 border border-red-500 bg-red-50 text-red-700 text-center">
+            <div
+              role="alert"
+              className="max-w-md mx-auto p-4 border border-red-500 bg-red-50 text-red-700 text-center"
+            >
               {errorMsg}
             </div>
           )}
@@ -73,6 +86,11 @@ function App() {
                 imageAlt={result.collectionTitle}
                 badges={[result.speciesFit, ...result.keywords]}
               />
+              {result.fallbackUsed && (
+                <p className="mt-4 text-center text-on-surface-variant font-body-md">
+                  Image generation was unavailable, so a placeholder image was used.
+                </p>
+              )}
             </div>
           )}
         </div>

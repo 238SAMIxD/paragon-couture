@@ -10,17 +10,15 @@ interface CollectionCardProps {
 }
 
 export const CollectionCard: React.FC<CollectionCardProps> = ({ title, imageSrc, imageAlt, badges, hiddenLg }) => (
-  <article className={`flex-col group cursor-pointer ${hiddenLg ? 'hidden lg:flex' : 'flex'}`}>
-    <div className="aspect-[3/4] border border-primary overflow-hidden relative mb-6">
-      <div className="absolute inset-0 bg-surface flex items-center justify-center p-8 z-10 transition-opacity duration-500 group-hover:opacity-0 border-b border-primary">
-        <h3 className="font-headline-md text-headline-md text-primary text-center">{title}</h3>
-      </div>
+  <article className={`flex-col ${hiddenLg ? 'hidden lg:flex' : 'flex'}`}>
+    <div className="aspect-[3/4] border border-primary overflow-hidden relative mb-6 bg-surface-container">
       <img
         alt={imageAlt}
-        className="w-full h-full object-cover absolute inset-0 grayscale z-0"
+        className="w-full h-full object-cover grayscale"
         src={imageSrc}
       />
     </div>
+    <h3 className="font-headline-md text-headline-md text-primary mb-4">{title}</h3>
     <div className="flex flex-wrap gap-2">
       {badges.map(badge => <Badge key={badge}>{badge}</Badge>)}
     </div>

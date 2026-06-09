@@ -12,6 +12,7 @@ type ApiCoutureResponse = {
   species_fit: string;
   keywords: string[];
   image_url: string;
+  fallback_used?: boolean;
 };
 
 type ApiCollectionItem = {
@@ -91,6 +92,7 @@ export async function generateParagonCouture(
     speciesFit: data.species_fit || "Unknown Fit",
     keywords: Array.isArray(data.keywords) ? data.keywords : [],
     imageUrl: data.image_url || "",
+    fallbackUsed: Boolean(data.fallback_used),
   };
 }
 

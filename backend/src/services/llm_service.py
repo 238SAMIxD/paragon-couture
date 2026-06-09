@@ -10,9 +10,9 @@ from __future__ import annotations
 
 import json
 import os
-from dataclasses import dataclass
 
 from openai import AsyncOpenAI
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 import structlog
 
 logger = structlog.get_logger(__name__)
@@ -21,12 +21,13 @@ logger = structlog.get_logger(__name__)
 # Result type
 # ---------------------------------------------------------------------------
 
-@dataclass(frozen=True)
-class CoutureMetadata:
-    collection_title: str
-    species_fit: str
-    keywords: list[str]
-    image_prompt: str
+class CoutureMetadata(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    collection_title: str = Field(min_length=1, max_length=120)
+    species_fit: str = Field(min_length=1, max_length=120)
+    keywords: list[str] = Field(min_length=1, max_length=8)
+    image_prompt: str = Field(min_length=1, max_length=2000)
 
 
 # ---------------------------------------------------------------------------
@@ -98,7 +99,7 @@ class LLMService:
             lead_popping:       Whether the tower pops lead bloons.
 
         Returns:
-            A :class:`CoutureMetadata` dataclass with the parsed fields.
+            A validated :class:`CoutureMetadata` model with the parsed fields.
 
         Raises:
             RuntimeError: On network errors, missing keys, or invalid JSON.
@@ -138,12 +139,12 @@ class LLMService:
             raise RuntimeError("Upstream LLM service unavailable") from exc
 
         message = choice.message
-        content: str = ""
+        content: str | list[object] = ""
 
         if hasattr(message, "content"):
-            content = str(message.content) if message.content is not None else ""
+            content = message.content if message.content is not None else ""
         elif isinstance(message, dict):
-            content = str(message.get("content", "") or "")
+            content = message.get("content", "") or ""
 
         # Handle content that arrives as a list of parts (some providers)
         if isinstance(content, list):
@@ -151,6 +152,8 @@ class LLMService:
                 str(part.get("text", "")) if isinstance(part, dict) else str(part)
                 for part in content
             )
+        else:
+            content = str(content)
 
         if not content:
             logger.error("llm_no_content")
@@ -166,15 +169,12 @@ class LLMService:
             logger.error("llm_invalid_json", error=str(exc), content=content)
             raise RuntimeError("LLM returned invalid JSON") from exc
 
-        if not isinstance(parsed, dict) or not all(
-            k in parsed for k in _REQUIRED_KEYS
-        ):
+        if not isinstance(parsed, dict) or not all(k in parsed for k in _REQUIRED_KEYS):
             logger.error("llm_missing_keys", parsed=parsed)
             raise RuntimeError(f"LLM JSON missing required keys: {_REQUIRED_KEYS}")
 
-        return CoutureMetadata(
-            collection_title=parsed["collection_title"],
-            species_fit=parsed["species_fit"],
-            keywords=parsed["keywords"],
-            image_prompt=parsed["image_prompt"],
-        )
+        try:
+            return CoutureMetadata.model_validate(parsed)
+        except ValidationError as exc:
+            logger.error("llm_invalid_schema", error=str(exc), parsed=parsed)
+            raise RuntimeError("LLM JSON failed schema validation") from exc

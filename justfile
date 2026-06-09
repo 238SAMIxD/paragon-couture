@@ -43,4 +43,4 @@ set shell := ["bash", "-c"]
     cd frontend && pnpm exec playwright test --ui
 
 @test:
-    just test-backend && just test-frontend
+    just test-backend && just test-frontend && just test-frontend-ui

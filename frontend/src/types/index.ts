@@ -24,4 +24,5 @@ export interface CoutureResponse {
   speciesFit: string;
   keywords: string[];
   imageUrl: string;
+  fallbackUsed: boolean;
 }

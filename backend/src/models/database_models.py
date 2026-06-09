@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, DateTime, func, JSON
+from sqlalchemy import Column, String, DateTime, func, JSON, Boolean
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
 
@@ -14,4 +14,5 @@ class CoutureCollection(Base):
     species_fit = Column(String, nullable=False)
     keywords = Column(JSON, nullable=False)
     image_url = Column(String, nullable=False)
+    fallback_used = Column(Boolean, nullable=False, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

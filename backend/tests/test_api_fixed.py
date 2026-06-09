@@ -26,7 +26,7 @@ def test_generate_couture(client):
     ):
         request_data = {
             "trend_description": "futuristic cyberpunk streetwear",
-            "monkey_tower_class": "wizard",
+            "monkey_tower_class": "magic",
             "camo_detection": True,
             "lead_popping": False,
         }
@@ -38,6 +38,35 @@ def test_generate_couture(client):
     assert data["species_fit"] == "Dart Monkey"
     assert data["keywords"] == ["dart", "monkey", "futuristic", "cyberpunk"]
     assert data["image_url"] == fake_image_uri
+    assert data["fallback_used"] is False
+
+def test_generate_rejects_invalid_tower_class(client):
+    """Test that the generate endpoint rejects unknown tower classes."""
+    response = client.post(
+        "/api/generate",
+        json={
+            "trend_description": "futuristic cyberpunk streetwear",
+            "monkey_tower_class": "wizard",
+            "camo_detection": True,
+            "lead_popping": False,
+        },
+    )
+
+    assert response.status_code == 422
+
+def test_generate_rejects_empty_trend_description(client):
+    """Test that the generate endpoint rejects empty trend descriptions."""
+    response = client.post(
+        "/api/generate",
+        json={
+            "trend_description": "",
+            "monkey_tower_class": "magic",
+            "camo_detection": True,
+            "lead_popping": False,
+        },
+    )
+
+    assert response.status_code == 422
 
 def test_fetch_collections(client):
     """Test that the collections endpoint returns 200 and fetches items."""

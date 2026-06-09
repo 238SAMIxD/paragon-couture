@@ -4,7 +4,6 @@ os.environ["DATABASE_URL"] = "sqlite+aiosqlite:///:memory:"
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-import asyncio
 import pytest
 from fastapi.testclient import TestClient
 from main import app
@@ -20,8 +19,12 @@ def create_tables():
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
     
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(init())
+    import asyncio
+    loop = asyncio.new_event_loop()
+    try:
+        loop.run_until_complete(init())
+    finally:
+        loop.close()
 
 @pytest.fixture
 def client():

@@ -5,6 +5,7 @@ The OpenAI client is fully mocked so no real LLM is required.
 """
 from __future__ import annotations
 
+import asyncio
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -29,6 +30,7 @@ VALID_JSON = '{"collection_title": "Dart Noir", "species_fit": "Dart Monkey", "k
 INVALID_JSON = "not json at all"
 
 MISSING_KEYS_JSON = '{"collection_title": "X"}'
+INVALID_SCHEMA_JSON = '{"collection_title": "Dart Noir", "species_fit": "Dart Monkey", "keywords": "black", "image_prompt": "A cinematic monkey"}'
 
 
 # ---------------------------------------------------------------------------
@@ -57,6 +59,10 @@ class TestLLMServiceParse:
         with pytest.raises(RuntimeError, match="missing required keys"):
             self.svc._parse(MISSING_KEYS_JSON)
 
+    def test_invalid_schema_raises_runtime_error(self):
+        with pytest.raises(RuntimeError, match="schema validation"):
+            self.svc._parse(INVALID_SCHEMA_JSON)
+
 
 class TestLLMServiceCallLLM:
     """Test the _call_llm helper with a mocked AsyncOpenAI client."""
@@ -72,38 +78,26 @@ class TestLLMServiceCallLLM:
     def test_returns_content_string(self):
         self._patch_client(return_value=_make_completion(VALID_JSON))
 
-        import asyncio
-        result = asyncio.get_event_loop().run_until_complete(
-            self.svc._call_llm("test prompt")
-        )
+        result = asyncio.run(self.svc._call_llm("test prompt"))
         assert result == VALID_JSON
 
     def test_network_error_raises_runtime_error(self):
         self._patch_client(side_effect=Exception("connection refused"))
 
-        import asyncio
         with pytest.raises(RuntimeError, match="unavailable"):
-            asyncio.get_event_loop().run_until_complete(
-                self.svc._call_llm("test prompt")
-            )
+            asyncio.run(self.svc._call_llm("test prompt"))
 
     def test_empty_content_raises_runtime_error(self):
         self._patch_client(return_value=_make_completion(""))
 
-        import asyncio
         with pytest.raises(RuntimeError, match="empty content"):
-            asyncio.get_event_loop().run_until_complete(
-                self.svc._call_llm("test prompt")
-            )
+            asyncio.run(self.svc._call_llm("test prompt"))
 
     def test_none_content_raises_runtime_error(self):
         self._patch_client(return_value=_make_completion(None))
 
-        import asyncio
         with pytest.raises(RuntimeError, match="empty content"):
-            asyncio.get_event_loop().run_until_complete(
-                self.svc._call_llm("test prompt")
-            )
+            asyncio.run(self.svc._call_llm("test prompt"))
 
 
 class TestLLMServiceGenerateCoutureMetadata:
@@ -117,11 +111,10 @@ class TestLLMServiceGenerateCoutureMetadata:
             return_value=_make_completion(VALID_JSON)
         )
 
-        import asyncio
-        meta = asyncio.get_event_loop().run_until_complete(
+        meta = asyncio.run(
             self.svc.generate_couture_metadata(
                 trend_description="neon brutalism",
-                monkey_tower_class="Dart Monkey",
+                monkey_tower_class="magic",
                 camo_detection=True,
                 lead_popping=False,
             )
@@ -134,12 +127,11 @@ class TestLLMServiceGenerateCoutureMetadata:
             side_effect=Exception("timeout")
         )
 
-        import asyncio
         with pytest.raises(RuntimeError):
-            asyncio.get_event_loop().run_until_complete(
+            asyncio.run(
                 self.svc.generate_couture_metadata(
                     trend_description="test",
-                    monkey_tower_class="Boomerang",
+                    monkey_tower_class="primary",
                     camo_detection=False,
                     lead_popping=True,
                 )
@@ -174,7 +166,7 @@ class TestGenerateEndpointUsesLLMService:
                 "/api/generate",
                 json={
                     "trend_description": "neon brutalism",
-                    "monkey_tower_class": "Dart Monkey",
+                    "monkey_tower_class": "primary",
                     "camo_detection": True,
                     "lead_popping": False,
                 },
@@ -186,6 +178,7 @@ class TestGenerateEndpointUsesLLMService:
         assert body["species_fit"] == "Dart Monkey"
         assert body["keywords"] == ["black", "latex", "minimal"]
         assert body["image_url"] == "data:image/png;base64,abc"
+        assert body["fallback_used"] is False
 
     def test_generate_falls_back_to_placeholder_when_comfyui_fails(self, client):
         from src.services.llm_service import CoutureMetadata
@@ -205,7 +198,7 @@ class TestGenerateEndpointUsesLLMService:
                 "/api/generate",
                 json={
                     "trend_description": "test",
-                    "monkey_tower_class": "Dart Monkey",
+                    "monkey_tower_class": "primary",
                     "camo_detection": False,
                     "lead_popping": False,
                 },
@@ -214,6 +207,7 @@ class TestGenerateEndpointUsesLLMService:
         assert resp.status_code == 200
         # Falls back to the placeholder image URL (percent-encoded)
         assert "Dart%20Monkey.png" in resp.json()["image_url"]
+        assert resp.json()["fallback_used"] is True
 
 
     def test_generate_returns_502_when_llm_fails(self, client):
@@ -225,7 +219,7 @@ class TestGenerateEndpointUsesLLMService:
                 "/api/generate",
                 json={
                     "trend_description": "test",
-                    "monkey_tower_class": "Dart Monkey",
+                    "monkey_tower_class": "primary",
                     "camo_detection": False,
                     "lead_popping": False,
                 },

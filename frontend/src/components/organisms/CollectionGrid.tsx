@@ -54,7 +54,11 @@ export const CollectionGrid: React.FC = () => {
 
       {/* Loading skeletons */}
       {loading && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+        <div
+          aria-label="Loading collections"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter"
+          role="status"
+        >
           {[0, 1, 2].map((i) => (
             <SkeletonCard key={i} />
           ))}
@@ -63,7 +67,7 @@ export const CollectionGrid: React.FC = () => {
 
       {/* Error state */}
       {!loading && error && (
-        <p className="text-center text-error font-body-md">{error}</p>
+        <p role="alert" className="text-center text-error font-body-md">{error}</p>
       )}
 
       {/* Empty state */}

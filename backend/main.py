@@ -3,10 +3,11 @@ import uuid
 import urllib.parse
 from datetime import datetime
 from contextlib import asynccontextmanager
+from typing import Literal
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.core.database import Base, engine, get_db
 from src.models.database_models import CoutureCollection
@@ -37,7 +38,14 @@ app.add_middleware(LoggingMiddleware)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5174", "http://localhost:5173", "http://localhost:3000"],
+    allow_origins=[
+        origin.strip()
+        for origin in os.getenv(
+            "CORS_ALLOW_ORIGINS",
+            "http://localhost:5174,http://localhost:5173,http://localhost:3000",
+        ).split(",")
+        if origin.strip()
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -50,14 +58,14 @@ class HealthCheck(BaseModel):
 
 
 class CoutureRequest(BaseModel):
-    trend_description: str
-    monkey_tower_class: str
+    trend_description: str = Field(min_length=1, max_length=500)
+    monkey_tower_class: Literal["primary", "military", "magic", "support", "hero"]
     camo_detection: bool
     lead_popping: bool
 
 
 class ImageGenerateRequest(BaseModel):
-    prompt: str
+    prompt: str = Field(min_length=1, max_length=2000)
     seed: int | None = None
 
 
@@ -70,6 +78,7 @@ class CoutureResponse(BaseModel):
     species_fit: str
     keywords: list[str]
     image_url: str
+    fallback_used: bool = False
 
 
 class CoutureCollectionResponse(BaseModel):
@@ -120,11 +129,13 @@ async def generate_couture(request: CoutureRequest, session: AsyncSession = Depe
     # 2. Generate image via ComfyUI (graceful fallback to placeholder)
     try:
         image_url = await comfyui.generate_image(meta.image_prompt)
+        fallback_used = False
         structlog.get_logger().info("comfyui_image_generated", prompt_preview=meta.image_prompt[:80])
     except Exception as exc:
         structlog.get_logger().error("comfyui_generation_failed", error=str(exc))
         frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5174")
         image_url = f"{frontend_url}/{urllib.parse.quote('Dart Monkey.png')}"
+        fallback_used = True
 
     # 3. Persist to database
     db_collection = CoutureCollection(
@@ -134,6 +145,7 @@ async def generate_couture(request: CoutureRequest, session: AsyncSession = Depe
         species_fit=meta.species_fit,
         keywords=meta.keywords,
         image_url=image_url,
+        fallback_used=fallback_used,
     )
     session.add(db_collection)
     await session.commit()
@@ -144,6 +156,7 @@ async def generate_couture(request: CoutureRequest, session: AsyncSession = Depe
         species_fit=meta.species_fit,
         keywords=meta.keywords,
         image_url=image_url,
+        fallback_used=fallback_used,
     )
 
 
