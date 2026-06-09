@@ -14,10 +14,6 @@ import pytest
 from src.services.llm_service import LLMService, CoutureMetadata
 
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
 def _make_completion(content: str):
     """Build a minimal mock completion object that resembles openai.ChatCompletion."""
     message = SimpleNamespace(content=content)
@@ -33,9 +29,6 @@ MISSING_KEYS_JSON = '{"collection_title": "X"}'
 INVALID_SCHEMA_JSON = '{"collection_title": "Dart Noir", "species_fit": "Dart Monkey", "keywords": "black", "image_prompt": "A cinematic monkey"}'
 
 
-# ---------------------------------------------------------------------------
-# Unit tests
-# ---------------------------------------------------------------------------
 
 class TestLLMServiceParse:
     """Test the _parse helper directly."""
@@ -138,10 +131,6 @@ class TestLLMServiceGenerateCoutureMetadata:
             )
 
 
-# ---------------------------------------------------------------------------
-# API endpoint test — /api/generate delegates to LLMService
-# ---------------------------------------------------------------------------
-
 class TestGenerateEndpointUsesLLMService:
     """
     Verifies that POST /api/generate delegates to LLMService and
@@ -205,7 +194,6 @@ class TestGenerateEndpointUsesLLMService:
             )
 
         assert resp.status_code == 200
-        # Falls back to the placeholder image URL (percent-encoded)
         assert "Dart%20Monkey.png" in resp.json()["image_url"]
         assert resp.json()["fallback_used"] is True
 

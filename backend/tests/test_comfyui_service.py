@@ -17,11 +17,7 @@ import pytest
 from src.services.comfyui_service import ComfyUIService, _build_prompt, _bytes_to_data_uri
 
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-FAKE_PNG = b"\x89PNG\r\n\x1a\n" + b"\x00" * 16  # minimal fake PNG header
+FAKE_PNG = b"\x89PNG\r\n\x1a\n" + b"\x00" * 16
 
 
 def _make_history(prompt_id: str, status: str = "success") -> dict:
@@ -44,9 +40,6 @@ def _make_history(prompt_id: str, status: str = "success") -> dict:
     }
 
 
-# ---------------------------------------------------------------------------
-# Unit tests – pure helpers
-# ---------------------------------------------------------------------------
 
 
 class TestBuildPrompt:
@@ -61,8 +54,8 @@ class TestBuildPrompt:
     def test_seed_is_random_when_omitted(self):
         wf1 = _build_prompt("test")
         wf2 = _build_prompt("test")
-        # Two calls should (almost certainly) produce different seeds
-        # – at minimum neither should be None
+
+
         assert wf1["3"]["inputs"]["seed"] is not None
         assert wf2["3"]["inputs"]["seed"] is not None
 
@@ -89,9 +82,6 @@ class TestBytesToDataUri:
         assert uri.startswith("data:image/jpeg;base64,")
 
 
-# ---------------------------------------------------------------------------
-# Async integration tests – ComfyUIService with mocked HTTP
-# ---------------------------------------------------------------------------
 
 
 class MockTransport(httpx.AsyncBaseTransport):
@@ -102,7 +92,7 @@ class MockTransport(httpx.AsyncBaseTransport):
 
     def __init__(self, prompt_id: str = "test-prompt-id", history_after: int = 1):
         self.prompt_id = prompt_id
-        self.history_after = history_after  # how many empty polls before result
+        self.history_after = history_after
         self._poll_count = 0
 
     async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
@@ -115,7 +105,7 @@ class MockTransport(httpx.AsyncBaseTransport):
         if path.startswith("/history/"):
             self._poll_count += 1
             if self._poll_count < self.history_after:
-                # Not done yet – return empty history
+
                 return httpx.Response(200, text=json.dumps({}))
             history = _make_history(self.prompt_id)
             return httpx.Response(200, text=json.dumps(history))
@@ -140,9 +130,9 @@ class TestComfyUIService:
             setattr(svc, k, v)
         return svc
 
-    # ------------------------------------------------------------------
-    # generate_image happy path
-    # ------------------------------------------------------------------
+
+
+
 
     def test_generate_image_returns_data_uri(self):
         transport = MockTransport()
@@ -165,7 +155,7 @@ class TestComfyUIService:
     def test_data_uri_format(self):
         uri = _bytes_to_data_uri(FAKE_PNG)
         assert uri.startswith("data:image/png;base64,")
-        # Verify the base64 portion decodes back to the original bytes
+
         b64_data = uri.split(",", 1)[1]
         assert base64.b64decode(b64_data) == FAKE_PNG
 
@@ -186,9 +176,9 @@ class TestComfyUIService:
         assert "60" in outputs
         assert transport._poll_count == 3
 
-    # ------------------------------------------------------------------
-    # Error cases
-    # ------------------------------------------------------------------
+
+
+
 
     def test_timeout_raises_timeout_error(self):
         """If history never returns data, TimeoutError should be raised."""
@@ -201,7 +191,7 @@ class TestComfyUIService:
 
         transport = NeverDoneTransport()
         svc = self._service()
-        svc.timeout = 0.05  # very short timeout
+        svc.timeout = 0.05
 
         async def _run():
             async with httpx.AsyncClient(
@@ -278,9 +268,9 @@ class TestComfyUIService:
         with pytest.raises(RuntimeError, match="ComfyUI rejected the prompt"):
             run(_run())
 
-    # ------------------------------------------------------------------
-    # Health check
-    # ------------------------------------------------------------------
+
+
+
 
     def test_health_check_returns_true_when_reachable(self):
         transport = MockTransport()
@@ -301,15 +291,12 @@ class TestComfyUIService:
         svc = ComfyUIService(
             base_url="http://definitely-not-running:9999", poll_interval=0.01
         )
-        # Override timeout to fail fast
+
         svc.timeout = 0.5
         result = run(svc.health_check())
         assert result is False
 
 
-# ---------------------------------------------------------------------------
-# API endpoint tests (via FastAPI TestClient)
-# ---------------------------------------------------------------------------
 
 
 class TestImageGenerateEndpoint:
