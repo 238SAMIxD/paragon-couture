@@ -22,7 +22,7 @@ def test_generate_couture(client):
 
     with (
         patch("main.llm.generate_couture_metadata", new=AsyncMock(return_value=fake_meta)),
-        patch("main.comfyui.generate_image", new=AsyncMock(return_value=fake_image_uri)),
+        patch("main.image_service.generate_image", new=AsyncMock(return_value=fake_image_uri)),
     ):
         request_data = {
             "trend_description": "futuristic cyberpunk streetwear",

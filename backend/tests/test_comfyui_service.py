@@ -321,7 +321,7 @@ class TestImageGenerateEndpoint:
     def test_returns_data_uri_on_success(self, client):
         fake_uri = f"data:image/png;base64,{base64.b64encode(FAKE_PNG).decode()}"
         with patch(
-            "main.comfyui.generate_image",
+            "main.image_service.generate_image",
             new=AsyncMock(return_value=fake_uri),
         ):
             resp = client.post(
@@ -333,7 +333,7 @@ class TestImageGenerateEndpoint:
 
     def test_returns_504_on_timeout(self, client):
         with patch(
-            "main.comfyui.generate_image",
+            "main.image_service.generate_image",
             new=AsyncMock(side_effect=TimeoutError("timed out")),
         ):
             resp = client.post(
@@ -344,7 +344,7 @@ class TestImageGenerateEndpoint:
 
     def test_returns_502_on_generic_error(self, client):
         with patch(
-            "main.comfyui.generate_image",
+            "main.image_service.generate_image",
             new=AsyncMock(side_effect=RuntimeError("comfyui down")),
         ):
             resp = client.post(
@@ -356,7 +356,7 @@ class TestImageGenerateEndpoint:
     def test_seed_is_optional(self, client):
         fake_uri = "data:image/png;base64,abc123"
         with patch(
-            "main.comfyui.generate_image",
+            "main.image_service.generate_image",
             new=AsyncMock(return_value=fake_uri),
         ):
             resp = client.post("/api/image-generate", json={"prompt": "no seed"})
@@ -366,17 +366,17 @@ class TestImageGenerateEndpoint:
 class TestComfyUIHealthEndpoint:
     def test_healthy(self, client):
         with patch(
-            "main.comfyui.health_check",
+            "main.image_service.health_check",
             new=AsyncMock(return_value=True),
         ):
-            resp = client.get("/health/comfyui")
+            resp = client.get("/health/image")
         assert resp.status_code == 200
         assert resp.json()["status"] == "ok"
 
     def test_unhealthy(self, client):
         with patch(
-            "main.comfyui.health_check",
+            "main.image_service.health_check",
             new=AsyncMock(return_value=False),
         ):
-            resp = client.get("/health/comfyui")
+            resp = client.get("/health/image")
         assert resp.status_code == 503

@@ -29,7 +29,7 @@ set shell := ["bash", "-c"]
     cd backend && uv run uvicorn main:app --reload --port 8000
 
 @dev:
-    just db-up & just dev-frontend & just dev-backend & wait
+    just db-up & just dev-backend & just dev-frontend & wait
 
 # Test scripts
 

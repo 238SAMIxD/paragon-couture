@@ -13,7 +13,7 @@ from src.core.database import Base, engine, get_db
 from src.models.database_models import CoutureCollection
 from src.core.telemetry import setup_telemetry
 from src.api.middleware import LoggingMiddleware
-from src.services.comfyui_service import ComfyUIService
+from src.services.image_service import get_image_service
 from src.services.llm_service import LLMService
 import structlog
 
@@ -95,7 +95,7 @@ class CoutureCollectionResponse(BaseModel):
 
 
 llm = LLMService()
-comfyui = ComfyUIService()
+image_service = get_image_service()
 
 
 @app.get("/health", response_model=HealthCheck)
@@ -103,13 +103,13 @@ async def health_check():
     return HealthCheck(status="ok", message="200 OK!")
 
 
-@app.get("/health/comfyui", response_model=HealthCheck)
-async def comfyui_health_check():
-    """Probe whether the ComfyUI instance is reachable."""
-    ok = await comfyui.health_check()
+@app.get("/health/image", response_model=HealthCheck)
+async def image_health_check():
+    """Probe whether the image generation service is reachable."""
+    ok = await image_service.health_check()
     if ok:
-        return HealthCheck(status="ok", message="ComfyUI is reachable")
-    raise HTTPException(status_code=503, detail="ComfyUI is not reachable")
+        return HealthCheck(status="ok", message="Image service is reachable")
+    raise HTTPException(status_code=503, detail="Image service is not reachable")
 
 
 @app.post("/api/generate", response_model=CoutureResponse)
@@ -126,13 +126,13 @@ async def generate_couture(request: CoutureRequest, session: AsyncSession = Depe
         structlog.get_logger().error("llm_failed", error=str(exc))
         raise HTTPException(status_code=502, detail="Upstream service unavailable")
 
-    # 2. Generate image via ComfyUI (graceful fallback to placeholder)
+    # 2. Generate image via ImageService (graceful fallback to placeholder)
     try:
-        image_url = await comfyui.generate_image(meta.image_prompt)
+        image_url = await image_service.generate_image(meta.image_prompt)
         fallback_used = False
-        structlog.get_logger().info("comfyui_image_generated", prompt_preview=meta.image_prompt[:80])
+        structlog.get_logger().info("image_generated", prompt_preview=meta.image_prompt[:80])
     except Exception as exc:
-        structlog.get_logger().error("comfyui_generation_failed", error=str(exc))
+        structlog.get_logger().error("image_generation_failed", error=str(exc))
         frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5174")
         image_url = f"{frontend_url}/{urllib.parse.quote('Dart Monkey.png')}"
         fallback_used = True
@@ -173,19 +173,19 @@ async def get_collections(session: AsyncSession = Depends(get_db)):
 @app.post("/api/image-generate", response_model=ImageGenerateResponse)
 async def image_generate(request: ImageGenerateRequest):
     """
-    Generate an image directly from a prompt via ComfyUI.
+    Generate an image directly from a prompt via the active ImageService.
 
     Returns a base64-encoded data URI (``data:image/png;base64,...``).
     This endpoint bypasses the LLM step and can be called independently
     to test or preview image generation.
     """
     try:
-        data_uri = await comfyui.generate_image(request.prompt, seed=request.seed)
+        data_uri = await image_service.generate_image(request.prompt, seed=request.seed)
     except TimeoutError as exc:
-        structlog.get_logger().error("comfyui_timeout", error=str(exc))
-        raise HTTPException(status_code=504, detail="ComfyUI timed out")
+        structlog.get_logger().error("image_timeout", error=str(exc))
+        raise HTTPException(status_code=504, detail="Image service timed out")
     except Exception as exc:
-        structlog.get_logger().error("comfyui_error", error=str(exc))
+        structlog.get_logger().error("image_error", error=str(exc))
         raise HTTPException(status_code=502, detail="Image generation failed")
 
     return ImageGenerateResponse(image_data_uri=data_uri)

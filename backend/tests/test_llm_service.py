@@ -160,7 +160,7 @@ class TestGenerateEndpointUsesLLMService:
 
         with (
             patch("main.llm.generate_couture_metadata", new=AsyncMock(return_value=fake_meta)),
-            patch("main.comfyui.generate_image", new=AsyncMock(return_value="data:image/png;base64,abc")),
+            patch("main.image_service.generate_image", new=AsyncMock(return_value="data:image/png;base64,abc")),
         ):
             resp = client.post(
                 "/api/generate",
@@ -192,7 +192,7 @@ class TestGenerateEndpointUsesLLMService:
 
         with (
             patch("main.llm.generate_couture_metadata", new=AsyncMock(return_value=fake_meta)),
-            patch("main.comfyui.generate_image", new=AsyncMock(side_effect=RuntimeError("down"))),
+            patch("main.image_service.generate_image", new=AsyncMock(side_effect=RuntimeError("down"))),
         ):
             resp = client.post(
                 "/api/generate",

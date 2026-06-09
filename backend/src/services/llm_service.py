@@ -70,13 +70,29 @@ class LLMService:
         api_key: str | None = None,
         model: str | None = None,
     ) -> None:
-        self.model = model or os.getenv(
-            "OLLAMA_MODEL", "huggingface.co/speakleash/Bielik-11B-v3.0-Instruct-GGUF:Q8_0"
-        )
-        self._client = AsyncOpenAI(
-            base_url=base_url or os.getenv("OPENAI_BASE_URL", "http://localhost:11434/v1"),
-            api_key=api_key or os.getenv("OPENAI_API_KEY", "ollama"),
-        )
+        provider = os.getenv("LLM_PROVIDER", "local").lower()
+
+        if provider == "openai":
+            self.model = model or "gpt-4o"
+            self._client = AsyncOpenAI(
+                api_key=api_key or os.getenv("OPENAI_API_KEY")
+            )
+        elif provider == "gemini":
+            self.model = model or "gemini-1.5-pro"
+            # Gemini provides an OpenAI-compatible endpoint
+            self._client = AsyncOpenAI(
+                base_url=base_url or "https://generativelanguage.googleapis.com/v1beta/openai/",
+                api_key=api_key or os.getenv("GEMINI_API_KEY")
+            )
+        else:
+            # Default to local via Ollama
+            self.model = model or os.getenv(
+                "OLLAMA_MODEL", "huggingface.co/speakleash/Bielik-11B-v3.0-Instruct-GGUF:Q8_0"
+            )
+            self._client = AsyncOpenAI(
+                base_url=base_url or os.getenv("OPENAI_BASE_URL") or "http://localhost:11434/v1",
+                api_key=api_key or os.getenv("OPENAI_API_KEY") or "ollama",
+            )
 
     # ------------------------------------------------------------------
     # Public API
