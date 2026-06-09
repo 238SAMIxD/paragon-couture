@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import patch, AsyncMock
-import json
+from src.services.llm_service import CoutureMetadata
 
 def test_healthcheck(client):
     """Test that the health endpoint returns 200 and expected JSON."""
@@ -11,34 +11,32 @@ def test_healthcheck(client):
     assert data["message"] == "200 OK!"
 
 def test_generate_couture(client):
-    """Test the generate endpoint with mocked LLM response."""
-    mock_response_data = {
-        "collection_title": "Dart Monkey Collection",
-        "species_fit": "Dart Monkey",
-        "keywords": ["dart", "monkey", "futuristic", "cyberpunk"]
-    }
-    
-    with patch('main.client.chat.completions.create', new_callable=AsyncMock) as mock_create:
-        mock_choice = type('MockChoice', (), {})()
-        mock_choice.message = type('MockMessage', (), {})()
-        mock_choice.message.content = json.dumps(mock_response_data)
-        mock_completion = type('MockCompletion', (), {})()
-        mock_completion.choices = [mock_choice]
-        mock_create.return_value = mock_completion
-    
+    """Test the generate endpoint with mocked LLM and ComfyUI responses."""
+    fake_meta = CoutureMetadata(
+        collection_title="Dart Monkey Collection",
+        species_fit="Dart Monkey",
+        keywords=["dart", "monkey", "futuristic", "cyberpunk"],
+    )
+    fake_image_uri = "data:image/png;base64,abc123"
+
+    with (
+        patch("main.llm.generate_couture_metadata", new=AsyncMock(return_value=fake_meta)),
+        patch("main.comfyui.generate_image", new=AsyncMock(return_value=fake_image_uri)),
+    ):
         request_data = {
             "trend_description": "futuristic cyberpunk streetwear",
             "monkey_tower_class": "wizard",
             "camo_detection": True,
-            "lead_popping": False
+            "lead_popping": False,
         }
         response = client.post("/api/generate", json=request_data)
-    
-        assert response.status_code == 200
-        data = response.json()
-        assert data["collection_title"] == mock_response_data["collection_title"]
-        assert data["species_fit"] == mock_response_data["species_fit"]
-        assert data["keywords"] == mock_response_data["keywords"]
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["collection_title"] == "Dart Monkey Collection"
+    assert data["species_fit"] == "Dart Monkey"
+    assert data["keywords"] == ["dart", "monkey", "futuristic", "cyberpunk"]
+    assert data["image_url"] == fake_image_uri
 
 def test_fetch_collections(client):
     """Test that the collections endpoint returns 200 and fetches items."""
