@@ -14,9 +14,6 @@ test.describe("Paragon Couture E2E Flow", () => {
 
     await page.goto("/");
 
-    console.warn("Page title:", await page.title());
-    console.warn("Page URL:", page.url());
-
     await expect(page.getByRole("link", { name: "PARAGON COUTURE" }).first()).toBeVisible();
 
     await expect(page.getByAltText("High-fashion monkey")).toBeVisible();

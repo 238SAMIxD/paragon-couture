@@ -8,7 +8,6 @@ import { defineConfig, globalIgnores } from "eslint/config";
 
 export default defineConfig([
   globalIgnores(["dist", "node_modules", "coverage", ".pnp", ".pnpm-store"]),
-  prettierConfig,
   {
     files: ["**/*.{ts,tsx}"],
     extends: [
@@ -31,4 +30,5 @@ export default defineConfig([
       "@typescript-eslint/no-explicit-any": "warn",
     },
   },
+  prettierConfig,
 ]);

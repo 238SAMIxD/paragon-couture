@@ -26,8 +26,7 @@ def setup_telemetry(app: FastAPI) -> None:
 
     otlp_exporter = OTLPSpanExporter(
         endpoint=os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317"),
-        insecure=os.getenv("OTEL_EXPORTER_OTLP_INSECURE", "true").lower()
-        in {"1", "true", "yes", "on"},
+        insecure=os.getenv("OTEL_EXPORTER_OTLP_INSECURE", "true").lower() in {"1", "true", "yes", "on"},
     )
     span_processor = BatchSpanProcessor(otlp_exporter)
     tracer_provider.add_span_processor(span_processor)
