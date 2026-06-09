@@ -1,7 +1,7 @@
 {
   "3": {
     "inputs": {
-      "seed": 603630813262431,
+      "seed": 447699075250741,
       "steps": 4,
       "cfg": 1,
       "sampler_name": "euler",
@@ -20,7 +20,7 @@
         0
       ],
       "latent_image": [
-        "58",
+        "75",
         0
       ]
     },
@@ -31,7 +31,7 @@
   },
   "6": {
     "inputs": {
-      "text": "Cinematic close-up of a futuristic CPU on a high-end motherboard, intense electric sparks flowing between circuits, ultra-detailed microchips, dramatic cyberpunk lighting, high contrast, metallic textures with reflections, shallow depth of field, sci-fi technology photography, sharp focus, no text.\n",
+      "text": "Cinematic close-up of a futuristic robotic monkey cyborg holding a sharp metallic glowing dart, standing on a high-end motherboard, intense electric sparks flowing between circuits, ultra-detailed microchips embedded in its mechanical armor, dramatic cyberpunk lighting, high contrast, metallic textures with reflections, shallow depth of field, sci-fi technology photography, sharp focus, no text.",
       "clip": [
         "38",
         0
@@ -150,6 +150,31 @@
     "class_type": "LoraLoaderModelOnly",
     "_meta": {
       "title": "LoraLoaderModelOnly"
+    }
+  },
+  "74": {
+    "inputs": {
+      "image": "Dart Monkey.png"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load Image"
+    }
+  },
+  "75": {
+    "inputs": {
+      "pixels": [
+        "74",
+        0
+      ],
+      "vae": [
+        "39",
+        0
+      ]
+    },
+    "class_type": "VAEEncode",
+    "_meta": {
+      "title": "VAE Encode"
     }
   }
 }

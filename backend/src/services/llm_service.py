@@ -26,6 +26,7 @@ class CoutureMetadata:
     collection_title: str
     species_fit: str
     keywords: list[str]
+    image_prompt: str
 
 
 # ---------------------------------------------------------------------------
@@ -35,11 +36,15 @@ class CoutureMetadata:
 _SYSTEM_PROMPT = (
     "You are an elite luxury fashion designer for the monkeys of the Bloons TD 6 universe. "
     "You must respond in valid JSON matching exactly this schema: "
-    "{ 'collection_title': '...', 'species_fit': '...', 'keywords': ['...', '...', '...'] }. "
-    "Do not include any other keys, explanation, or surrounding text."
+    "{ 'collection_title': '...', 'species_fit': '...', 'keywords': ['...', '...', '...'], 'image_prompt': '...' }. "
+    "Do not include any other keys, explanation, or surrounding text. "
+    "For the 'image_prompt', write a highly detailed, descriptive, and cinematic prompt for an AI image generator that perfectly embodies the user's requested trend. "
+    "Describe the monkey's luxurious outfit, materials, textures, dynamic lighting, and background. "
+    "Use terms like 'high-fashion editorial photography', 'shallow depth of field', 'sharp focus', 'ultra-detailed', and 'cinematic lighting'. "
+    "Adapt the theme entirely based on the user's trend description—do not force any specific aesthetic (like cyberpunk or cyborgs) unless the user asks for it."
 )
 
-_REQUIRED_KEYS = ("collection_title", "species_fit", "keywords")
+_REQUIRED_KEYS = ("collection_title", "species_fit", "keywords", "image_prompt")
 
 
 class LLMService:
@@ -171,4 +176,5 @@ class LLMService:
             collection_title=parsed["collection_title"],
             species_fit=parsed["species_fit"],
             keywords=parsed["keywords"],
+            image_prompt=parsed["image_prompt"],
         )

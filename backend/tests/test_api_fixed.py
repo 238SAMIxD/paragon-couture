@@ -16,6 +16,7 @@ def test_generate_couture(client):
         collection_title="Dart Monkey Collection",
         species_fit="Dart Monkey",
         keywords=["dart", "monkey", "futuristic", "cyberpunk"],
+        image_prompt="A cinematic image of a dart monkey",
     )
     fake_image_uri = "data:image/png;base64,abc123"
 

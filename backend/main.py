@@ -118,15 +118,9 @@ async def generate_couture(request: CoutureRequest, session: AsyncSession = Depe
         raise HTTPException(status_code=502, detail="Upstream service unavailable")
 
     # 2. Generate image via ComfyUI (graceful fallback to placeholder)
-    image_prompt = (
-        f"{meta.collection_title} – {meta.species_fit} – "
-        + ", ".join(meta.keywords)
-        + f". Trend: {request.trend_description}. "
-        "High-fashion editorial photography, luxury couture, ultra-detailed."
-    )
     try:
-        image_url = await comfyui.generate_image(image_prompt)
-        structlog.get_logger().info("comfyui_image_generated", prompt_preview=image_prompt[:80])
+        image_url = await comfyui.generate_image(meta.image_prompt)
+        structlog.get_logger().info("comfyui_image_generated", prompt_preview=meta.image_prompt[:80])
     except Exception as exc:
         structlog.get_logger().error("comfyui_generation_failed", error=str(exc))
         frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5174")

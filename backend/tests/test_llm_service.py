@@ -24,7 +24,7 @@ def _make_completion(content: str):
     return SimpleNamespace(choices=[choice])
 
 
-VALID_JSON = '{"collection_title": "Dart Noir", "species_fit": "Dart Monkey", "keywords": ["black", "latex", "minimal"]}'
+VALID_JSON = '{"collection_title": "Dart Noir", "species_fit": "Dart Monkey", "keywords": ["black", "latex", "minimal"], "image_prompt": "A cinematic monkey"}'
 
 INVALID_JSON = "not json at all"
 
@@ -47,6 +47,7 @@ class TestLLMServiceParse:
         assert meta.collection_title == "Dart Noir"
         assert meta.species_fit == "Dart Monkey"
         assert meta.keywords == ["black", "latex", "minimal"]
+        assert meta.image_prompt == "A cinematic monkey"
 
     def test_invalid_json_raises_runtime_error(self):
         with pytest.raises(RuntimeError, match="invalid JSON"):
@@ -162,6 +163,7 @@ class TestGenerateEndpointUsesLLMService:
             collection_title="Dart Noir",
             species_fit="Dart Monkey",
             keywords=["black", "latex", "minimal"],
+            image_prompt="A cinematic monkey",
         )
 
         with (
@@ -192,6 +194,7 @@ class TestGenerateEndpointUsesLLMService:
             collection_title="Dart Noir",
             species_fit="Dart Monkey",
             keywords=["black"],
+            image_prompt="A cinematic monkey",
         )
 
         with (
