@@ -13,7 +13,46 @@ const SkeletonCard: React.FC = () => (
   </div>
 );
 
-export const CollectionGrid: React.FC = () => {
+const LoadingState: React.FC = () => (
+  <div
+    aria-label="Loading collections"
+    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter"
+    role="status"
+  >
+    {[0, 1, 2].map((i) => (
+      <SkeletonCard key={i} />
+    ))}
+  </div>
+);
+
+const ErrorState: React.FC<{ error: string }> = ({ error }) => (
+  <p role="alert" className="text-center text-error font-body-md">
+    {error}
+  </p>
+);
+
+const EmptyState: React.FC = () => (
+  <p className="text-center text-on-surface-variant font-body-md">
+    No collections yet — generate your first bespoke paragon above.
+  </p>
+);
+
+const CollectionList: React.FC<{ items: CollectionItem[] }> = ({ items }) => (
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+    {items.map((item, index) => (
+      <CollectionCard
+        key={item.id}
+        title={item.collectionTitle}
+        imageSrc={item.imageUrl}
+        imageAlt={item.collectionTitle}
+        badges={[item.speciesFit, ...item.keywords]}
+        hiddenLg={index >= 3}
+      />
+    ))}
+  </div>
+);
+
+const useCollections = () => {
   const [items, setItems] = useState<CollectionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,50 +77,29 @@ export const CollectionGrid: React.FC = () => {
     };
   }, []);
 
+  return { items, loading, error };
+};
+
+function getContentState(
+  loading: boolean,
+  error: string | null,
+  items: CollectionItem[]
+): React.ReactNode {
+  if (loading) return <LoadingState />;
+  if (error) return <ErrorState error={error} />;
+  if (items.length === 0) return <EmptyState />;
+  return <CollectionList items={items} />;
+}
+
+export const CollectionGrid: React.FC = () => {
+  const { items, loading, error } = useCollections();
+
   return (
     <div className="lg:col-span-12 mt-section-gap pt-16 border-t border-primary">
       <h2 className="font-headline-lg text-headline-lg text-primary text-center mb-16 tracking-tighter">
         THE SEASONAL COLLECTION
       </h2>
-
-      {loading && (
-        <div
-          aria-label="Loading collections"
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter"
-          role="status"
-        >
-          {[0, 1, 2].map((i) => (
-            <SkeletonCard key={i} />
-          ))}
-        </div>
-      )}
-
-      {!loading && error && (
-        <p role="alert" className="text-center text-error font-body-md">
-          {error}
-        </p>
-      )}
-
-      {!loading && !error && items.length === 0 && (
-        <p className="text-center text-on-surface-variant font-body-md">
-          No collections yet — generate your first bespoke paragon above.
-        </p>
-      )}
-
-      {!loading && !error && items.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
-          {items.map((item, index) => (
-            <CollectionCard
-              key={item.id}
-              title={item.collectionTitle}
-              imageSrc={item.imageUrl}
-              imageAlt={item.collectionTitle}
-              badges={[item.speciesFit, ...item.keywords]}
-              hiddenLg={index >= 3}
-            />
-          ))}
-        </div>
-      )}
+      {getContentState(loading, error, items)}
     </div>
   );
 };
