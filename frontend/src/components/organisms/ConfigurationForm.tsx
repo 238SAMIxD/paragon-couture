@@ -59,16 +59,8 @@ const OptionsSection: React.FC<{
   onLeadChange: (value: boolean) => void;
 }> = ({ camoDetection, leadPopping, onCamoChange, onLeadChange }) => (
   <div className="space-y-6 pt-4">
-    <ToggleRow
-      label="CAMO DETECTION THREADING"
-      checked={camoDetection}
-      onChange={onCamoChange}
-    />
-    <ToggleRow
-      label="LEAD-POPPING DURABILITY"
-      checked={leadPopping}
-      onChange={onLeadChange}
-    />
+    <ToggleRow label="CAMO DETECTION THREADING" checked={camoDetection} onChange={onCamoChange} />
+    <ToggleRow label="LEAD-POPPING DURABILITY" checked={leadPopping} onChange={onLeadChange} />
   </div>
 );
 

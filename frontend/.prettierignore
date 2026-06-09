@@ -4,3 +4,4 @@ build
 coverage
 .pnp
 .pnpm-store
+pnpm-lock.yaml
