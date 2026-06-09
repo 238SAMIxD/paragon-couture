@@ -1,13 +1,13 @@
-import React from 'react';
+import React from "react";
 
-import { Button } from '@/components/atoms/Button';
-import { Select } from '@/components/atoms/Select';
-import { TextArea } from '@/components/atoms/TextArea';
-import { FormField } from '@/components/molecules/FormField';
-import { SectionHeader } from '@/components/molecules/SectionHeader';
-import { ToggleRow } from '@/components/molecules/ToggleRow';
+import { Button } from "@/components/atoms/Button";
+import { Select } from "@/components/atoms/Select";
+import { TextArea } from "@/components/atoms/TextArea";
+import { FormField } from "@/components/molecules/FormField";
+import { SectionHeader } from "@/components/molecules/SectionHeader";
+import { ToggleRow } from "@/components/molecules/ToggleRow";
 
-import type { ParagonConfigurationState, MonkeyTowerClass } from '@/types';
+import type { ParagonConfigurationState, MonkeyTowerClass } from "@/types";
 interface ConfigurationFormProps {
   config: ParagonConfigurationState;
   setConfig: React.Dispatch<React.SetStateAction<ParagonConfigurationState>>;
@@ -16,11 +16,11 @@ interface ConfigurationFormProps {
 }
 
 const TOWER_OPTIONS = [
-  { value: 'primary', label: 'PRIMARY' },
-  { value: 'military', label: 'MILITARY' },
-  { value: 'magic', label: 'MAGIC' },
-  { value: 'support', label: 'SUPPORT' },
-  { value: 'hero', label: 'HERO' },
+  { value: "primary", label: "PRIMARY" },
+  { value: "military", label: "MILITARY" },
+  { value: "magic", label: "MAGIC" },
+  { value: "support", label: "SUPPORT" },
+  { value: "hero", label: "HERO" },
 ];
 
 export const ConfigurationForm: React.FC<ConfigurationFormProps> = ({
@@ -80,7 +80,7 @@ export const ConfigurationForm: React.FC<ConfigurationFormProps> = ({
 
       <div className="pt-8">
         <Button type="submit" disabled={isLoading}>
-          {isLoading ? 'TAILORING PARAGON FIT...' : 'REQUEST BESPOKE GENERATION'}
+          {isLoading ? "TAILORING PARAGON FIT..." : "REQUEST BESPOKE GENERATION"}
         </Button>
       </div>
     </form>

@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 
-import { CollectionCard } from '@/components/molecules/CollectionCard';
-import { fetchCollections, type CollectionItem } from '@/services/coutureService';
+import { CollectionCard } from "@/components/molecules/CollectionCard";
+import { fetchCollections, type CollectionItem } from "@/services/coutureService";
 
 const SkeletonCard: React.FC = () => (
   <div className="flex flex-col animate-pulse">
@@ -27,7 +27,7 @@ export const CollectionGrid: React.FC = () => {
       })
       .catch((err) => {
         if (!cancelled)
-          setError(err instanceof Error ? err.message : 'Failed to load collections.');
+          setError(err instanceof Error ? err.message : "Failed to load collections.");
       })
       .finally(() => {
         if (!cancelled) setLoading(false);

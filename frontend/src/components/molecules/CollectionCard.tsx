@@ -1,5 +1,5 @@
-import React from 'react';
-import { Badge } from '@/components/atoms/Badge';
+import React from "react";
+import { Badge } from "@/components/atoms/Badge";
 
 interface CollectionCardProps {
   title: string;
@@ -16,7 +16,7 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
   badges,
   hiddenLg,
 }) => (
-  <article className={`flex-col ${hiddenLg ? 'hidden lg:flex' : 'flex'}`}>
+  <article className={`flex-col ${hiddenLg ? "hidden lg:flex" : "flex"}`}>
     <div className="aspect-[3/4] border border-primary overflow-hidden relative mb-6 bg-surface-container">
       <img alt={imageAlt} className="w-full h-full object-cover grayscale" src={imageSrc} />
     </div>

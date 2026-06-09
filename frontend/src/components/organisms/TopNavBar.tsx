@@ -1,8 +1,8 @@
-import React from 'react';
-import { Search, ShoppingBag } from 'lucide-react';
-import { Logo } from '@/components/atoms/Logo';
-import { NavLink } from '@/components/atoms/NavLink';
-import { IconButton } from '@/components/atoms/IconButton';
+import React from "react";
+import { Search, ShoppingBag } from "lucide-react";
+import { Logo } from "@/components/atoms/Logo";
+import { NavLink } from "@/components/atoms/NavLink";
+import { IconButton } from "@/components/atoms/IconButton";
 
 export const TopNavBar: React.FC = () => (
   <nav

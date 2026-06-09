@@ -1,18 +1,18 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from "react";
 
-import { CollectionCard } from '@/components/molecules/CollectionCard';
-import { CollectionGrid } from '@/components/organisms/CollectionGrid';
-import { ConfigurationForm } from '@/components/organisms/ConfigurationForm';
-import { EditorialHero } from '@/components/organisms/EditorialHero';
-import { Footer } from '@/components/organisms/Footer';
-import { TopNavBar } from '@/components/organisms/TopNavBar';
-import { generateParagonCouture } from '@/services/coutureService';
+import { CollectionCard } from "@/components/molecules/CollectionCard";
+import { CollectionGrid } from "@/components/organisms/CollectionGrid";
+import { ConfigurationForm } from "@/components/organisms/ConfigurationForm";
+import { EditorialHero } from "@/components/organisms/EditorialHero";
+import { Footer } from "@/components/organisms/Footer";
+import { TopNavBar } from "@/components/organisms/TopNavBar";
+import { generateParagonCouture } from "@/services/coutureService";
 
-import type { ParagonConfigurationState, CoutureResponse } from '@/types';
+import type { ParagonConfigurationState, CoutureResponse } from "@/types";
 function App() {
   const [config, setConfig] = useState<ParagonConfigurationState>({
-    trendDescription: '',
-    monkeyTowerClass: 'primary',
+    trendDescription: "",
+    monkeyTowerClass: "primary",
     camoDetection: false,
     leadPopping: true,
   });
@@ -39,7 +39,7 @@ function App() {
       setGridRefreshKey((k) => k + 1);
     } catch (error) {
       console.error(error);
-      setErrorMsg(error instanceof Error ? error.message : 'An unexpected error occurred');
+      setErrorMsg(error instanceof Error ? error.message : "An unexpected error occurred");
     } finally {
       setIsLoading(false);
     }
@@ -63,7 +63,7 @@ function App() {
           aria-live="polite"
           ref={resultRegionRef}
           tabIndex={-1}
-          className={`lg:col-span-12 mt-16 transition-opacity duration-1000 ${result || errorMsg ? 'opacity-100' : 'opacity-0 invisible h-0'}`}
+          className={`lg:col-span-12 mt-16 transition-opacity duration-1000 ${result || errorMsg ? "opacity-100" : "opacity-0 invisible h-0"}`}
         >
           {errorMsg && (
             <div

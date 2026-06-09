@@ -1,5 +1,5 @@
-import React from 'react';
-import { ChevronDown } from 'lucide-react';
+import React from "react";
+import { ChevronDown } from "lucide-react";
 
 export const Select: React.FC<
   React.SelectHTMLAttributes<HTMLSelectElement> & { options: { value: string; label: string }[] }

@@ -1,5 +1,5 @@
-import React from 'react';
-import { Toggle } from '@/components/atoms/Toggle';
+import React from "react";
+import { Toggle } from "@/components/atoms/Toggle";
 
 interface ToggleRowProps {
   label: string;
@@ -9,7 +9,7 @@ interface ToggleRowProps {
 }
 
 export const ToggleRow: React.FC<ToggleRowProps> = ({ label, checked, onChange, id }) => {
-  const toggleId = id || label.replace(/\s+/g, '-').toLowerCase();
+  const toggleId = id || label.replace(/\s+/g, "-").toLowerCase();
   return (
     <div className="flex items-center justify-between group">
       <label
