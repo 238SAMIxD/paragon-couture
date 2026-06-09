@@ -20,13 +20,17 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<CoutureResponse | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  // Increment to trigger CollectionGrid re-fetch after a successful generation
+  const [gridRefreshKey, setGridRefreshKey] = useState(0);
 
   const handleSubmit = async () => {
     setIsLoading(true);
     setResult(null);
+    setErrorMsg(null);
     try {
       const res = await generateParagonCouture(config);
       setResult(res);
+      setGridRefreshKey((k) => k + 1);
     } catch (error) {
       console.error(error);
       setErrorMsg(error instanceof Error ? error.message : "An unexpected error occurred");
@@ -74,7 +78,8 @@ function App() {
         </div>
 
         <div className="lg:col-span-12 mt-8">
-          <CollectionGrid />
+          {/* key forces a remount (and re-fetch) after each generation */}
+          <CollectionGrid key={gridRefreshKey} />
         </div>
       </main>
 
