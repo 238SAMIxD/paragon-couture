@@ -35,7 +35,10 @@ jobs:
           cache-dependency-glob: backend/uv.lock
 
       - name: Install dependencies
-        run: uv sync --locked
+        run: uv sync --locked --dev
+
+      - name: Run ruff
+        run: uv run ruff check src/ main.py --line-length=100
 
       - name: Run pytest
         run: uv run python -m pytest tests/ -v
@@ -72,6 +75,9 @@ jobs:
 
       - name: Run lint
         run: pnpm run lint
+
+      - name: Run prettier check
+        run: pnpm run format:check
 
       - name: Run build
         run: pnpm run build

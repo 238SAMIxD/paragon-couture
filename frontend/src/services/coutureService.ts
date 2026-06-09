@@ -1,7 +1,6 @@
-import type { CoutureRequest, CoutureResponse } from "@/types";
+import type { CoutureRequest, CoutureResponse } from '@/types';
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000';
 
 type ApiCoutureResponse = {
   collection_title: string;
@@ -41,17 +40,15 @@ function mapCollection(item: ApiCollectionItem): CollectionItem {
     collectionTitle: item.collection_title,
     speciesFit: item.species_fit,
     keywords: Array.isArray(item.keywords) ? item.keywords : [],
-    imageUrl: item.image_url ?? "",
+    imageUrl: item.image_url ?? '',
     createdAt: new Date(item.created_at),
   };
 }
 
-export async function generateParagonCouture(
-  request: CoutureRequest,
-): Promise<CoutureResponse> {
+export async function generateParagonCouture(request: CoutureRequest): Promise<CoutureResponse> {
   const response = await fetch(`${API_BASE_URL}/api/generate`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       trend_description: request.trendDescription,
       monkey_tower_class: request.monkeyTowerClass,
@@ -67,15 +64,15 @@ export async function generateParagonCouture(
 
   const data: ApiCoutureResponse = await response.json();
 
-  if (!data || typeof data !== "object") {
-    throw new Error("Invalid response format from server");
+  if (!data || typeof data !== 'object') {
+    throw new Error('Invalid response format from server');
   }
 
   return {
-    collectionTitle: data.collection_title || "Unknown Collection",
-    speciesFit: data.species_fit || "Unknown Fit",
+    collectionTitle: data.collection_title || 'Unknown Collection',
+    speciesFit: data.species_fit || 'Unknown Fit',
     keywords: Array.isArray(data.keywords) ? data.keywords : [],
-    imageUrl: data.image_url || "",
+    imageUrl: data.image_url || '',
     fallbackUsed: Boolean(data.fallback_used),
   };
 }
@@ -90,7 +87,7 @@ export async function fetchCollections(): Promise<CollectionItem[]> {
   const data: ApiCollectionItem[] = await response.json();
 
   if (!Array.isArray(data)) {
-    throw new Error("Unexpected response shape from /api/collections");
+    throw new Error('Unexpected response shape from /api/collections');
   }
 
   return data.map(mapCollection);

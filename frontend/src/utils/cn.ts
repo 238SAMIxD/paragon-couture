@@ -1,20 +1,20 @@
-import { type ClassValue, clsx } from "clsx";
-import { extendTailwindMerge } from "tailwind-merge";
+import { type ClassValue, clsx } from 'clsx';
+import { extendTailwindMerge } from 'tailwind-merge';
 
 const twMerge = extendTailwindMerge({
   extend: {
     classGroups: {
-      "font-size": [
+      'font-size': [
         {
           text: [
-            "label-caps",
-            "label-sm",
-            "body-md",
-            "body-lg",
-            "headline-lg",
-            "headline-md",
-            "headline-lg-mobile",
-            "display-lg",
+            'label-caps',
+            'label-sm',
+            'body-md',
+            'body-lg',
+            'headline-lg',
+            'headline-md',
+            'headline-lg-mobile',
+            'display-lg',
           ],
         },
       ],

@@ -11,9 +11,9 @@ from __future__ import annotations
 import json
 import os
 
+import structlog
 from openai import AsyncOpenAI
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
-import structlog
 
 logger = structlog.get_logger(__name__)
 
