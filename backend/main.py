@@ -114,7 +114,6 @@ async def image_health_check():
 
 @app.post("/api/generate", response_model=CoutureResponse)
 async def generate_couture(request: CoutureRequest, session: AsyncSession = Depends(get_db)):
-    # 1. Generate collection metadata via LLM
     try:
         meta = await llm.generate_couture_metadata(
             trend_description=request.trend_description,
@@ -126,7 +125,6 @@ async def generate_couture(request: CoutureRequest, session: AsyncSession = Depe
         structlog.get_logger().error("llm_failed", error=str(exc))
         raise HTTPException(status_code=502, detail="Upstream service unavailable")
 
-    # 2. Generate image via ImageService (graceful fallback to placeholder)
     try:
         image_url = await image_service.generate_image(meta.image_prompt)
         fallback_used = False
@@ -137,7 +135,6 @@ async def generate_couture(request: CoutureRequest, session: AsyncSession = Depe
         image_url = f"{frontend_url}/{urllib.parse.quote('Dart Monkey.png')}"
         fallback_used = True
 
-    # 3. Persist to database
     db_collection = CoutureCollection(
         trend_description=request.trend_description,
         monkey_tower_class=request.monkey_tower_class,

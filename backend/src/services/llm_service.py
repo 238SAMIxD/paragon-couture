@@ -17,9 +17,6 @@ import structlog
 
 logger = structlog.get_logger(__name__)
 
-# ---------------------------------------------------------------------------
-# Result type
-# ---------------------------------------------------------------------------
 
 class CoutureMetadata(BaseModel):
     model_config = ConfigDict(frozen=True)
@@ -29,10 +26,6 @@ class CoutureMetadata(BaseModel):
     keywords: list[str] = Field(min_length=1, max_length=8)
     image_prompt: str = Field(min_length=1, max_length=2000)
 
-
-# ---------------------------------------------------------------------------
-# Service
-# ---------------------------------------------------------------------------
 
 _SYSTEM_PROMPT = (
     "You are an elite luxury fashion designer for the monkeys of the Bloons TD 6 universe. "
@@ -79,13 +72,11 @@ class LLMService:
             )
         elif provider == "gemini":
             self.model = model or "gemini-1.5-pro"
-            # Gemini provides an OpenAI-compatible endpoint
             self._client = AsyncOpenAI(
                 base_url=base_url or "https://generativelanguage.googleapis.com/v1beta/openai/",
                 api_key=api_key or os.getenv("GEMINI_API_KEY")
             )
         else:
-            # Default to local via Ollama
             self.model = model or os.getenv(
                 "OLLAMA_MODEL", "huggingface.co/speakleash/Bielik-11B-v3.0-Instruct-GGUF:Q8_0"
             )
@@ -93,10 +84,6 @@ class LLMService:
                 base_url=base_url or os.getenv("OPENAI_BASE_URL") or "http://localhost:11434/v1",
                 api_key=api_key or os.getenv("OPENAI_API_KEY") or "ollama",
             )
-
-    # ------------------------------------------------------------------
-    # Public API
-    # ------------------------------------------------------------------
 
     async def generate_couture_metadata(
         self,
@@ -129,10 +116,6 @@ class LLMService:
         raw = await self._call_llm(user_prompt)
         return self._parse(raw)
 
-    # ------------------------------------------------------------------
-    # Internal helpers
-    # ------------------------------------------------------------------
-
     async def _call_llm(self, user_prompt: str) -> str:
         """Send the prompt to the LLM and return the raw content string."""
         try:
@@ -162,7 +145,6 @@ class LLMService:
         elif isinstance(message, dict):
             content = message.get("content", "") or ""
 
-        # Handle content that arrives as a list of parts (some providers)
         if isinstance(content, list):
             content = "".join(
                 str(part.get("text", "")) if isinstance(part, dict) else str(part)

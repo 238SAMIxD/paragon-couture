@@ -22,15 +22,11 @@ import structlog
 
 logger = structlog.get_logger(__name__)
 
-# ---------------------------------------------------------------------------
-# Path to the bundled workflow template
-# ---------------------------------------------------------------------------
 _WORKFLOW_PATH = Path(__file__).parent / "Qwen.json"
 
 
-# Node IDs inside the workflow (adjust if the JSON ever changes)
-_POSITIVE_PROMPT_NODE = "6"  # CLIPTextEncode – positive prompt
-_KSAMPLER_NODE = "3"         # KSampler – carries the seed
+_POSITIVE_PROMPT_NODE = "6"
+_KSAMPLER_NODE = "3"
 
 
 def _load_workflow() -> dict[str, Any]:
@@ -52,10 +48,8 @@ def _build_prompt(positive_text: str, seed: int | None = None) -> dict[str, Any]
     """
     workflow = _load_workflow()
 
-    # Inject positive prompt
     workflow[_POSITIVE_PROMPT_NODE]["inputs"]["text"] = positive_text
 
-    # Randomise seed so each call produces a unique image
     workflow[_KSAMPLER_NODE]["inputs"]["seed"] = (
         seed if seed is not None else random.randint(0, 2**32 - 1)
     )
@@ -85,10 +79,6 @@ class ComfyUIService:
         ).rstrip("/")
         self.poll_interval = poll_interval
         self.timeout = timeout
-
-    # ------------------------------------------------------------------
-    # Public API
-    # ------------------------------------------------------------------
 
     async def generate_image(
         self,
@@ -125,10 +115,6 @@ class ComfyUIService:
         data_uri = _bytes_to_data_uri(image_bytes)
         return data_uri
 
-    # ------------------------------------------------------------------
-    # Internal helpers
-    # ------------------------------------------------------------------
-
     async def _queue_prompt(
         self, client: httpx.AsyncClient, workflow: dict[str, Any]
     ) -> str:
@@ -164,12 +150,10 @@ class ComfyUIService:
             history = response.json()
 
             if prompt_id not in history:
-                # Not finished yet
                 continue
 
             entry = history[prompt_id]
 
-            # Check for execution errors reported by ComfyUI
             status = entry.get("status", {})
             if status.get("status_str") == "error":
                 messages = status.get("messages", [])
@@ -192,16 +176,7 @@ class ComfyUIService:
     async def _fetch_image(
         self, client: httpx.AsyncClient, outputs: dict[str, Any]
     ) -> bytes:
-        """
-        Download the first image from the workflow outputs.
-
-        ComfyUI's SaveImage node places results under::
-
-            outputs[node_id]["images"] = [{"filename": "...", "subfolder": "...", "type": "output"}, ...]
-
-        Returns the raw PNG/JPEG bytes.
-        """
-        # Find the first image across all output nodes
+        """Download the first image from the workflow outputs and return raw bytes."""
         for node_id, node_output in outputs.items():
             images: list[dict[str, str]] = node_output.get("images", [])
             if images:
@@ -228,10 +203,6 @@ class ComfyUIService:
 
         raise RuntimeError("No images found in ComfyUI outputs")
 
-    # ------------------------------------------------------------------
-    # Health check
-    # ------------------------------------------------------------------
-
     async def health_check(self) -> bool:
         """Return True if ComfyUI is reachable and responsive."""
         try:
@@ -244,10 +215,6 @@ class ComfyUIService:
             logger.warning("comfyui_unreachable", error=str(exc))
             return False
 
-
-# ---------------------------------------------------------------------------
-# Utility
-# ---------------------------------------------------------------------------
 
 def _bytes_to_data_uri(image_bytes: bytes, mime: str = "image/png") -> str:
     """Encode raw image bytes as a RFC 2397 data URI."""

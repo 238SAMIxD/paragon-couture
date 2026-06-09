@@ -20,7 +20,6 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<CoutureResponse | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  // Increment to trigger CollectionGrid re-fetch after a successful generation
   const [gridRefreshKey, setGridRefreshKey] = useState(0);
   const resultRegionRef = useRef<HTMLDivElement>(null);
 
@@ -60,7 +59,6 @@ function App() {
           isLoading={isLoading}
         />
 
-        {/* Results Card with fade in transition */}
         <div
           aria-live="polite"
           ref={resultRegionRef}
@@ -96,7 +94,6 @@ function App() {
         </div>
 
         <div className="lg:col-span-12 mt-8">
-          {/* key forces a remount (and re-fetch) after each generation */}
           <CollectionGrid key={gridRefreshKey} />
         </div>
       </main>

@@ -3,10 +3,6 @@ import type { CoutureRequest, CoutureResponse } from "@/types";
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
-// ---------------------------------------------------------------------------
-// Shared API shapes (snake_case — mirrors the FastAPI response models)
-// ---------------------------------------------------------------------------
-
 type ApiCoutureResponse = {
   collection_title: string;
   species_fit: string;
@@ -26,10 +22,6 @@ type ApiCollectionItem = {
   created_at: string;
 };
 
-// ---------------------------------------------------------------------------
-// Public types
-// ---------------------------------------------------------------------------
-
 export interface CollectionItem {
   id: string;
   trendDescription: string;
@@ -40,10 +32,6 @@ export interface CollectionItem {
   imageUrl: string;
   createdAt: Date;
 }
-
-// ---------------------------------------------------------------------------
-// API helpers
-// ---------------------------------------------------------------------------
 
 function mapCollection(item: ApiCollectionItem): CollectionItem {
   return {
@@ -57,10 +45,6 @@ function mapCollection(item: ApiCollectionItem): CollectionItem {
     createdAt: new Date(item.created_at),
   };
 }
-
-// ---------------------------------------------------------------------------
-// generateParagonCouture — POST /api/generate
-// ---------------------------------------------------------------------------
 
 export async function generateParagonCouture(
   request: CoutureRequest,
@@ -95,10 +79,6 @@ export async function generateParagonCouture(
     fallbackUsed: Boolean(data.fallback_used),
   };
 }
-
-// ---------------------------------------------------------------------------
-// fetchCollections — GET /api/collections
-// ---------------------------------------------------------------------------
 
 export async function fetchCollections(): Promise<CollectionItem[]> {
   const response = await fetch(`${API_BASE_URL}/api/collections`);

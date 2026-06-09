@@ -3,10 +3,6 @@ import React, { useEffect, useState } from "react";
 import { CollectionCard } from "@/components/molecules/CollectionCard";
 import { fetchCollections, type CollectionItem } from "@/services/coutureService";
 
-// ---------------------------------------------------------------------------
-// Skeleton card — shown while loading
-// ---------------------------------------------------------------------------
-
 const SkeletonCard: React.FC = () => (
   <div className="flex flex-col animate-pulse">
     <div className="aspect-[3/4] bg-surface-container border border-primary mb-6" />
@@ -16,10 +12,6 @@ const SkeletonCard: React.FC = () => (
     </div>
   </div>
 );
-
-// ---------------------------------------------------------------------------
-// CollectionGrid
-// ---------------------------------------------------------------------------
 
 export const CollectionGrid: React.FC = () => {
   const [items, setItems] = useState<CollectionItem[]>([]);
@@ -52,7 +44,6 @@ export const CollectionGrid: React.FC = () => {
         THE SEASONAL COLLECTION
       </h2>
 
-      {/* Loading skeletons */}
       {loading && (
         <div
           aria-label="Loading collections"
@@ -65,19 +56,16 @@ export const CollectionGrid: React.FC = () => {
         </div>
       )}
 
-      {/* Error state */}
       {!loading && error && (
         <p role="alert" className="text-center text-error font-body-md">{error}</p>
       )}
 
-      {/* Empty state */}
       {!loading && !error && items.length === 0 && (
         <p className="text-center text-on-surface-variant font-body-md">
           No collections yet — generate your first bespoke paragon above.
         </p>
       )}
 
-      {/* Live grid */}
       {!loading && !error && items.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
           {items.map((item, index) => (
