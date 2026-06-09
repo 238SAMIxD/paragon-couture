@@ -1,10 +1,10 @@
 import os
 import json
 import uuid
+import urllib.parse
 from datetime import datetime
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
-import urllib.parse
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, ConfigDict
@@ -14,6 +14,7 @@ from src.core.database import Base, engine, get_db
 from src.models.database_models import CoutureCollection
 from src.core.telemetry import setup_telemetry
 from src.api.middleware import LoggingMiddleware
+from src.services.comfyui_service import ComfyUIService
 import structlog
 
 load_dotenv()
@@ -56,6 +57,15 @@ class CoutureRequest(BaseModel):
     lead_popping: bool
 
 
+class ImageGenerateRequest(BaseModel):
+    prompt: str
+    seed: int | None = None
+
+
+class ImageGenerateResponse(BaseModel):
+    image_data_uri: str
+
+
 class CoutureResponse(BaseModel):
     collection_title: str
     species_fit: str
@@ -81,10 +91,21 @@ client = AsyncOpenAI(
     api_key=os.getenv("OPENAI_API_KEY", "ollama"),
 )
 
+comfyui = ComfyUIService()
+
 
 @app.get("/health", response_model=HealthCheck)
 async def health_check():
     return HealthCheck(status="ok", message="200 OK!")
+
+
+@app.get("/health/comfyui", response_model=HealthCheck)
+async def comfyui_health_check():
+    """Probe whether the ComfyUI instance is reachable."""
+    ok = await comfyui.health_check()
+    if ok:
+        return HealthCheck(status="ok", message="ComfyUI is reachable")
+    raise HTTPException(status_code=503, detail="ComfyUI is not reachable")
 
 
 @app.post("/api/generate", response_model=CoutureResponse)
@@ -147,9 +168,22 @@ async def generate_couture(request: CoutureRequest, session: AsyncSession = Depe
         structlog.get_logger().error("llm_missing_keys", parsed=parsed)
         raise HTTPException(status_code=502, detail="Upstream service unavailable")
 
-    frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5174")
-    encoded_filename = urllib.parse.quote("Dart Monkey.png")
-    placeholder_image = f"{frontend_url}/{encoded_filename}"
+    # Build an image prompt from the LLM-generated keywords + collection title
+    image_prompt = (
+        f"{parsed['collection_title']} – {parsed['species_fit']} – "
+        + ", ".join(parsed["keywords"])
+        + f". Trend: {request.trend_description}. "
+        "High-fashion editorial photography, luxury couture, ultra-detailed."
+    )
+
+    try:
+        image_url = await comfyui.generate_image(image_prompt)
+        structlog.get_logger().info("comfyui_image_generated", prompt_preview=image_prompt[:80])
+    except Exception as exc:
+        structlog.get_logger().error("comfyui_generation_failed", error=str(exc))
+        # Fall back to a static placeholder so the rest of the flow keeps working
+        frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5174")
+        image_url = f"{frontend_url}/{urllib.parse.quote('Dart Monkey.png')}"
 
     db_collection = CoutureCollection(
         trend_description=request.trend_description,
@@ -157,7 +191,7 @@ async def generate_couture(request: CoutureRequest, session: AsyncSession = Depe
         collection_title=parsed["collection_title"],
         species_fit=parsed["species_fit"],
         keywords=parsed["keywords"],
-        image_url=placeholder_image,
+        image_url=image_url,
     )
     session.add(db_collection)
     await session.commit()
@@ -167,7 +201,7 @@ async def generate_couture(request: CoutureRequest, session: AsyncSession = Depe
         "collection_title": parsed["collection_title"],
         "species_fit": parsed["species_fit"],
         "keywords": parsed["keywords"],
-        "image_url": placeholder_image,
+        "image_url": image_url,
     }
 
     try:
@@ -186,3 +220,23 @@ async def get_collections(session: AsyncSession = Depends(get_db)):
     collections = result.scalars().all()
     return collections
 
+
+@app.post("/api/image-generate", response_model=ImageGenerateResponse)
+async def image_generate(request: ImageGenerateRequest):
+    """
+    Generate an image directly from a prompt via ComfyUI.
+
+    Returns a base64-encoded data URI (``data:image/png;base64,...``).
+    This endpoint bypasses the LLM step and can be called independently
+    to test or preview image generation.
+    """
+    try:
+        data_uri = await comfyui.generate_image(request.prompt, seed=request.seed)
+    except TimeoutError as exc:
+        structlog.get_logger().error("comfyui_timeout", error=str(exc))
+        raise HTTPException(status_code=504, detail="ComfyUI timed out")
+    except Exception as exc:
+        structlog.get_logger().error("comfyui_error", error=str(exc))
+        raise HTTPException(status_code=502, detail="Image generation failed")
+
+    return ImageGenerateResponse(image_data_uri=data_uri)
