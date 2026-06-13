@@ -1,8 +1,10 @@
-from sqlalchemy import Column, String, DateTime, func, JSON, Boolean
-from sqlalchemy.dialects.postgresql import UUID
 import uuid
 
+from sqlalchemy import JSON, Boolean, Column, DateTime, String, func
+from sqlalchemy.dialects.postgresql import UUID
+
 from src.core.database import Base
+
 
 class CoutureCollection(Base):
     __tablename__ = "couture_collections"

@@ -1,0 +1,35 @@
+# Dependencies
+node_modules
+.pnp
+.pnpm-store
+
+# Build outputs
+dist
+build
+coverage
+*.min.js
+*.min.css
+
+# Lockfiles
+pnpm-lock.yaml
+yarn.lock
+package-lock.json
+
+# Virtual environments
+.venv
+venv
+ENV
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# Python
+__pycache__
+*.py[cod]
+
+# Test and cache
+.pytest_cache
+.hypothesis

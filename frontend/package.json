@@ -7,6 +7,8 @@
     "dev": "vite --host",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "preview": "vite preview",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui"
@@ -14,14 +16,11 @@
   "dependencies": {
     "@tailwindcss/container-queries": "^0.1.1",
     "@tailwindcss/forms": "^0.5.11",
-    "autoprefixer": "^10.5.0",
-    "axios": "^1.16.0",
     "clsx": "^2.1.1",
     "lucide-react": "^1.14.0",
     "postcss": "^8.5.14",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
-    "react-router-dom": "^7.15.0",
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.3.0"
   },
@@ -34,9 +33,12 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
     "eslint": "^10.2.1",
+    "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
+    "fallow": "^2.90.0",
     "globals": "^17.5.0",
+    "prettier": "^3.3.3",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.58.2",
     "vite": "^8.0.10"

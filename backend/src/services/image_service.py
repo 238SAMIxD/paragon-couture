@@ -2,18 +2,16 @@
 Image Generation Service.
 
 Defines the base Protocol for image generation services and provides
-implementations for DALL-E, Banana/Replicate (Placeholder), and 
+implementations for DALL-E, Banana/Replicate (Placeholder), and
 local ComfyUI. Also provides a factory to get the right service based
 on the environment.
 """
 
 from __future__ import annotations
 
-import base64
 import os
 from typing import Protocol
 
-import httpx
 import structlog
 from openai import AsyncOpenAI
 
@@ -26,11 +24,11 @@ class ImageService(Protocol):
     async def generate_image(self, prompt: str, seed: int | None = None) -> str:
         """
         Generate an image and return it as a data URI.
-        
+
         Args:
             prompt: The text prompt describing the image.
             seed: Optional RNG seed.
-            
+
         Returns:
             A string in the format "data:image/png;base64,...".
         """

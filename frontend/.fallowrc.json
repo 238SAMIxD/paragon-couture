@@ -1,0 +1,27 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+  "entry": ["src/index.{ts,tsx,js,jsx}", "src/main.{ts,tsx,js,jsx}"],
+  "ignorePatterns": [
+    "**/*.d.ts",
+    "**/__generated__/**",
+    "**/*.stories.*",
+    "**/*.test.*",
+    "**/*.spec.*"
+  ],
+  "ignoreDependencies": ["@types/*", "typescript"],
+  "duplicates": {
+    "minOccurrences": 3,
+    "minTokens": 30
+  },
+  "rules": {
+    "unused-dependencies": "warn",
+    "unused-exports": "warn",
+    "unused-files": "warn",
+    "circular-dependencies": "error"
+  },
+  "health": {
+    "maxCyclomatic": 20,
+    "maxCognitive": 15,
+    "maxCrap": 60
+  }
+}

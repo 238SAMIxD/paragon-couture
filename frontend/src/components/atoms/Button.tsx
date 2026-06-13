@@ -2,9 +2,12 @@ import React from "react";
 
 import { cn } from "@/utils/cn";
 
-export const Button: React.FC<
-  React.ButtonHTMLAttributes<HTMLButtonElement>
-> = ({ children, disabled, className = "", ...props }) => (
+export const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = ({
+  children,
+  disabled,
+  className = "",
+  ...props
+}) => (
   <button
     {...props}
     disabled={disabled}
@@ -14,7 +17,7 @@ export const Button: React.FC<
       "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary",
       disabled &&
         "opacity-50 cursor-not-allowed hover:bg-primary hover:text-on-primary hover:border-primary",
-      className,
+      className
     )}
   >
     {children}

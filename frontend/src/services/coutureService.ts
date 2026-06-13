@@ -1,7 +1,6 @@
 import type { CoutureRequest, CoutureResponse } from "@/types";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
 type ApiCoutureResponse = {
   collection_title: string;
@@ -46,10 +45,19 @@ function mapCollection(item: ApiCollectionItem): CollectionItem {
   };
 }
 
-export async function generateParagonCouture(
-  request: CoutureRequest,
-): Promise<CoutureResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/generate`, {
+async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
+  const response = await fetch(url, options);
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Request failed (${response.status}): ${errorText}`);
+  }
+
+  return response.json() as Promise<T>;
+}
+
+export async function generateParagonCouture(request: CoutureRequest): Promise<CoutureResponse> {
+  const data = await fetchJson<ApiCoutureResponse>(`${API_BASE_URL}/api/generate`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -60,34 +68,21 @@ export async function generateParagonCouture(
     }),
   });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Backend request failed (${response.status}): ${errorText}`);
-  }
-
-  const data: ApiCoutureResponse = await response.json();
-
-  if (!data || typeof data !== "object") {
+  if (!data) {
     throw new Error("Invalid response format from server");
   }
 
   return {
-    collectionTitle: data.collection_title || "Unknown Collection",
-    speciesFit: data.species_fit || "Unknown Fit",
-    keywords: Array.isArray(data.keywords) ? data.keywords : [],
-    imageUrl: data.image_url || "",
-    fallbackUsed: Boolean(data.fallback_used),
+    collectionTitle: data.collection_title ?? "Unknown Collection",
+    speciesFit: data.species_fit ?? "Unknown Fit",
+    keywords: data.keywords ?? [],
+    imageUrl: data.image_url ?? "",
+    fallbackUsed: data.fallback_used ?? false,
   };
 }
 
 export async function fetchCollections(): Promise<CollectionItem[]> {
-  const response = await fetch(`${API_BASE_URL}/api/collections`);
-
-  if (!response.ok) {
-    throw new Error(`Failed to load collections (${response.status})`);
-  }
-
-  const data: ApiCollectionItem[] = await response.json();
+  const data = await fetchJson<ApiCollectionItem[]>(`${API_BASE_URL}/api/collections`);
 
   if (!Array.isArray(data)) {
     throw new Error("Unexpected response shape from /api/collections");
