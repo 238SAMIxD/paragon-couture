@@ -1,102 +1,91 @@
-# Paragon Couture - AI Agent PoC
+# 🎈 Paragon Couture - Enterprise AI Fashion Dashboard
+## 📖 Overview
+Paragon Couture is a full-stack, cloud-native web application that generates luxury *haute couture* fashion designs specifically for monkeys in the Bloons TD 6 (BTD6) universe. Built with an enterprise-grade architecture, the system leverages local Large Language Models (Ollama) for structured text generation and local Diffusion models (via ComfyUI) for high-end image rendering.
+## 🚀 Tech Stack
+### Frontend (User Interface)
+ * **Framework:** React 19 + TypeScript
+ * **Build Tool:** Vite
+ * **Styling:** Tailwind CSS 4 (Custom "Fancy BTD6" Glassmorphism theme)
+ * **Testing:** Playwright (End-to-End E2E)
+ * **State & Routing:** React Hooks, React Router DOM v7
+ * **Tooling:** ESLint, Prettier, Just
+### Backend (API & AI Pipeline)
+ * **Framework:** FastAPI (Asynchronous)
+ * **Language:** Python 3.12+
+ * **Database:** PostgreSQL (running in Docker) via asyncpg and SQLAlchemy ORM
+ * **AI Text Generation:** Local Ollama (llama3.1) configured via standard openai Python client for JSON structured outputs.
+ * **AI Image Generation:** Local ComfyUI workflow integration (comfyui_service.py).
+ * **Observability:** OpenTelemetry (Tracing) & Structlog (Structured JSON Logging).
+ * **Testing:** pytest with pytest-asyncio and httpx (Mocked LLM & In-Memory SQLite overrides).
+## 🏗️ Architecture & Key Features
+ 1. **100% Local AI Pipeline (Air-Gapped Ready):**
+   * Zero data leaves the host machine. Text generation is handled by Ollama, prompting strict JSON schemas enforced by Pydantic. Image generation is offloaded to a local ComfyUI instance, optimized for modern hardware (e.g., AMD Strix Halo).
+ 2. **Cloud-Native Observability:**
+   * Custom ASGI middleware generates unique request_ids. All logs are output in structured JSON format via structlog, perfectly formatted for ingestion by GCP Cloud Logging, Azure Application Insights, or Datadog.
+ 3. **Robust Data Persistence:**
+   * Fully asynchronous SQLAlchemy 2.0 integration with a PostgreSQL database, storing complete fashion collections, AI prompts, and generated metadata.
+ 4. **Automated Quality Assurance:**
+   * Comprehensive backend integration tests (pytest) utilizing dependency overrides to prevent actual LLM/DB calls during CI runs.
+   * Visual frontend workflow validation using Playwright E2E tests.
+## 📂 Project Structure
+```text
+paragon-couture/
+├── backend/                  
+│   ├── src/                 
+│   │   ├── api/             # Routers and ASGI Middleware (Observability)
+│   │   ├── core/            # DB setup, Logger, Telemetry, Config
+│   │   ├── models/          # Pydantic Schemas & SQLAlchemy Models
+│   │   └── services/        # llm_service.py, comfyui_service.py, image_service.py
+│   ├── tests/               # Pytest suite (conftest.py, test_api_fixed.py)
+│   ├── main.py              # FastAPI application entry point
+│   └── pyproject.toml       # Python dependencies (uv)
+├── frontend/                
+│   ├── src/
+│   │   ├── components/      # Atomic Design (atoms, molecules, organisms)
+│   │   ├── services/        # coutureService.ts (API client)
+│   │   └── App.tsx          # Root React component
+│   ├── tests/e2e/           # Playwright E2E test specifications
+│   └── playwright.config.ts # Playwright configuration
+├── docker-compose.yml       # PostgreSQL database service
+└── justfile                 # Unified task runner
 
-A modern Proof of Concept (PoC) demonstrating a microservice architecture designed for AI agent integration. This project emphasizes robust observability, clean API design, and a scalable frontend client, aligning with modern MLOps and backend engineering standards.
-
-## ⚠️ Project Scope & UI Disclaimer
-
-This repository is currently under active development. The primary focus of this PoC is the backend architecture, observability infrastructure (OpenTelemetry), and the upcoming Model Context Protocol (MCP) integration for LLMs.
-
-The included React application serves as a Minimum Viable Product (MVP) client to validate the End-to-End flow and API communication. It is not intended to represent a fully polished, production-ready user interface at this stage.
-
-## 🏗️ Architecture & Tech Stack
-
-### Backend
-
-The microservice is built for high performance and tracing capabilities:
-
-- **Framework:** Python with FastAPI for asynchronous REST endpoints.
-- **Observability:** Native OpenTelemetry integration (`telemetry.py`) for detailed request tracing and LLM generation monitoring.
-- **Data Validation:** Pydantic models for strict payload validation.
-- **Database:** Core database integration prepared via `database.py` and `database_models.py`.
-
-### Frontend
-
-A strictly typed, component-based client application:
-
-- **Core:** React with TypeScript, powered by Vite.
-- **Architecture:** Atomic design pattern implementations (Atoms, Molecules, Organisms).
-- **Testing:** E2E testing configured with Playwright (`paragon-flow.spec.ts`).
-
-### Infrastructure & Tooling
-
-- **Containerization:** `docker-compose.yml` for unified local development environments.
-- **Task Runner:** `justfile` included for streamlined command execution and environment setup.
-- **Dependency Management:** `uv.lock` and `pyproject.toml` for the backend, `pnpm` for the frontend.
-
-## 🗺️ Roadmap / Work in Progress
-
-- [x] **Phase 1: Foundation**
-  - Setup FastAPI backend with custom middleware.
-  - Initialize React/TypeScript frontend with Vite.
-  - Configure local Docker ecosystem.
-- [x] **Phase 2: Observability & Core Logic**
-  - Implement OpenTelemetry tracing for API routes.
-  - Setup database models and core logger.
-  - Implement E2E testing foundation with Playwright.
-- [x] **Phase 3: AI Integration (Current)**
-  - Integrate Gemini LLM engine.
-  - Implement Model Context Protocol (MCP) for tool execution.
-  - Expose agent capabilities via REST endpoints.
-
-## 🚀 Getting Started
-
+```
+## 🛠️ Quick Start & Setup
 ### Prerequisites
-
-- Docker & Docker Compose
-- Node.js & pnpm
-- Python 3.12+
-- `just` command runner
-
-### Running Locally
-
-We use [`just`](https://just.systems/) to streamline the development workflow and manage commands.
-
-1. **Clone the repository:**
-
+ * **Node.js & pnpm** (Frontend)
+ * **Python 3.12+ & uv** (Backend package manager)
+ * **Docker** (For PostgreSQL)
+ * **Ollama** (Running locally with llama3.1 model)
+ * **ComfyUI** (Running locally on default port 8188 with SDXL Turbo/equivalent models)
+### Development Commands
+We use just as our command runner for a seamless Developer Experience (DX).
+**1. Infrastructure & Install**
 ```bash
-git clone <repository-url>
-cd paragon-couture
-```
+# Start PostgreSQL via Docker
+docker compose up -d
 
-2. **Install all dependencies** (Frontend `pnpm`, Backend `uv`):
-
-```bash
+# Install all dependencies (Frontend + Backend)
 just setup
+
 ```
-
-3. **Start the comprehensive local development environment** (starts Docker containers, runs backend, runs frontend):
-
+**2. Run the Application**
 ```bash
+# Start both FastAPI backend and React frontend
 just dev
+
+```
+ * Frontend will be available at: http://localhost:5173
+ * Backend API Docs (Swagger) at: http://localhost:8000/docs
+**3. Quality Assurance & Testing**
+```bash
+# Run strict formatters and linters (ESLint, Prettier, Ruff, Mypy)
+just audit
+
+# Run Backend Integration Tests
+just test-backend
+
+# Run Frontend E2E Tests (Playwright UI Mode)
+just test-frontend-ui
+
 ```
 
-Alternatively, you can run individual services:
-
-- **Database/Infrastructure:** `just db-up`
-- **Frontend development server:** `just dev-frontend`
-- **Backend development server:** `just dev-backend`
-
-### 🔬 Observability (OpenTelemetry & Jaeger)
-
-The backend is fully instrumented with **OpenTelemetry**. When running the infrastructure via Docker Compose (`just dev` or `just db-up`), a Jaeger container is automatically started to collect and visualize traces.
-
-- **Jaeger UI:** Access the tracing dashboard at [http://localhost:16686](http://localhost:16686) to inspect API requests, LLM generation flows, and database queries.
-
-## 🧪 Testing
-
-The project includes foundational tests for both stacks that can be executed easily using `just`:
-
-- **All Tests:** Run `just test` to execute both backend and frontend tests.
-- **Backend:** Run `just test-backend` to execute pytest tests.
-- **Frontend (Headless):** Run `just test-frontend` to execute Playwright E2E flows.
-- **Frontend (UI Mode):** Run `just test-frontend-ui` to open the Playwright UI.
