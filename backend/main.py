@@ -1,25 +1,27 @@
 import os
-import uuid
 import urllib.parse
-from datetime import datetime
+import uuid
 from contextlib import asynccontextmanager
+from datetime import datetime
 from typing import Literal
+
+import structlog
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.core.database import Base, engine, get_db
-from src.models.database_models import CoutureCollection
-from src.core.telemetry import setup_telemetry
+
 from src.api.middleware import LoggingMiddleware
+from src.core.database import Base, engine, get_db
+from src.core.logger import configure_structlog
+from src.core.telemetry import setup_telemetry
+from src.models.database_models import CoutureCollection
 from src.services.image_service import get_image_service
 from src.services.llm_service import LLMService
-import structlog
 
 load_dotenv()
 
-from src.core.logger import configure_structlog
 configure_structlog()
 
 
@@ -123,7 +125,7 @@ async def generate_couture(request: CoutureRequest, session: AsyncSession = Depe
         )
     except RuntimeError as exc:
         structlog.get_logger().error("llm_failed", error=str(exc))
-        raise HTTPException(status_code=502, detail="Upstream service unavailable")
+        raise HTTPException(status_code=502, detail="Upstream service unavailable") from exc
 
     try:
         image_url = await image_service.generate_image(meta.image_prompt)
@@ -180,9 +182,9 @@ async def image_generate(request: ImageGenerateRequest):
         data_uri = await image_service.generate_image(request.prompt, seed=request.seed)
     except TimeoutError as exc:
         structlog.get_logger().error("image_timeout", error=str(exc))
-        raise HTTPException(status_code=504, detail="Image service timed out")
+        raise HTTPException(status_code=504, detail="Image service timed out") from exc
     except Exception as exc:
         structlog.get_logger().error("image_error", error=str(exc))
-        raise HTTPException(status_code=502, detail="Image generation failed")
+        raise HTTPException(status_code=502, detail="Image generation failed") from exc
 
     return ImageGenerateResponse(image_data_uri=data_uri)

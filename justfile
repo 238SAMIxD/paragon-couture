@@ -44,3 +44,29 @@ set shell := ["bash", "-c"]
 
 @test:
     just test-backend && just test-frontend && just test-frontend-ui
+
+# Quality scripts
+
+@lint-frontend:
+    cd frontend && pnpm run lint
+
+@lint-backend:
+    cd backend && uv run ruff check src/ main.py --line-length=100
+
+@lint:
+    just lint-frontend && just lint-backend
+
+@format:
+    cd frontend && pnpm run format
+
+@format-check:
+    cd frontend && pnpm run format:check
+
+@fallow:
+    cd frontend && npx fallow audit
+
+@vulture:
+    cd backend && uv run vulture src/ main.py --min-confidence 80 --exclude .venv,__pycache__,tests
+
+@quality:
+    just fallow && just vulture

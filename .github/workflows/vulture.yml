@@ -1,0 +1,55 @@
+name: Vulture
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: vulture-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  vulture:
+    name: Dead Code Detection
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install dependencies
+        run: uv sync --locked --dev
+
+      - name: Run vulture
+        run: |
+          uv run vulture src/ main.py \
+            --min-confidence 80 \
+            --exclude .venv,__pycache__,tests \
+            --make-whitelist
+
+      - name: Upload vulture report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vulture-report
+          path: backend/whitelist.py
+          if-no-files-found: ignore

@@ -1,7 +1,6 @@
-import structlog
-import uuid
 import logging
-from typing import Any
+
+import structlog
 
 DEFAULT_LOG_LEVEL = logging.INFO
 

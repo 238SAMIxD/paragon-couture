@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import asyncio
 import base64
-import copy
 import json
 import os
 import random
@@ -177,7 +176,7 @@ class ComfyUIService:
         self, client: httpx.AsyncClient, outputs: dict[str, Any]
     ) -> bytes:
         """Download the first image from the workflow outputs and return raw bytes."""
-        for node_id, node_output in outputs.items():
+        for _node_id, node_output in outputs.items():
             images: list[dict[str, str]] = node_output.get("images", [])
             if images:
                 img_info = images[0]

@@ -1,9 +1,4 @@
-export type MonkeyTowerClass =
-  | "primary"
-  | "military"
-  | "magic"
-  | "support"
-  | "hero";
+export type MonkeyTowerClass = "primary" | "military" | "magic" | "support" | "hero";
 
 export interface ParagonConfigurationState {
   trendDescription: string;
